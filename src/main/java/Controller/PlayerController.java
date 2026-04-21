@@ -39,9 +39,11 @@ public class PlayerController implements Controller {
         }
         // Player clicked an occupied cell with a skill queued up (Handling Attacks/Heals)
         else if (selectedAction != null) {
-            selectedAction.execute(activeUnit, clickedCell);
-            gameManager.setSelectedAction(null);       // Deselect skill after using it
-            gameManager.updateTurnDisplay(activeUnit); // Refresh UI to show damage
+            if (!activeUnit.isExhausted()) {
+                selectedAction.execute(activeUnit, clickedCell);
+                gameManager.setSelectedAction(null);       // Deselect skill after using it
+                gameManager.updateTurnDisplay(activeUnit); // Refresh UI to show damage
+            }
         }
     }
 }
