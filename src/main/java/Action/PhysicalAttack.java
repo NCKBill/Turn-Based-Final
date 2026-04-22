@@ -21,7 +21,6 @@ public class PhysicalAttack extends Action {
                 damage = this.getValue() + attacker.getStrength() - target.getDefense();
                 if (damage < 0) damage = 0;
 
-                target.setHealthPoint(target.getHealthPoint() - damage);
                 System.out.println(target.getName() + " was attacked for " + damage + " HP.");
             } else {
                 // prevent player from accidentally attacking a friendly unit

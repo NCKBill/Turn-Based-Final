@@ -21,7 +21,6 @@ public class Heal extends Action {
                 // heal target
                 // deduct ap cost
                 heal = this.getValue() + healer.getPower();
-                target.setHealthPoint(target.getHealthPoint() + heal);
                 healer.setActionPoint(healer.getActionPoint() - this.getApCost());
 
                 System.out.println(target.getName() + " was healed for " + this.getValue() + " HP.");

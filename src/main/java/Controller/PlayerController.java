@@ -24,16 +24,15 @@ public class PlayerController implements Controller {
         Unit selectedViewUnit = gameManager.getSelectedViewUnit();
 
         // Player clicked an empty cell (Handling Movement)
-        if (clickedCell != null && clickedCell.getUnit() == null) {
+        if (clickedCell != null && !clickedCell.isOccupied()) {
+            gameManager.setSelectedAction(null);       // Deselect skill if empty cell
+
             if (selectedViewUnit != null && selectedViewUnit == activeUnit) {
                 Cell startCell = gameManager.getBackendGrid().getCell(selectedViewUnit);
                 List<Cell> reachable = gameManager.getBackendGrid().getReachableCells(startCell, selectedViewUnit.getMovementPoint());
 
                 if (reachable.contains(clickedCell)) {
                     List<Cell> fullPath = gameManager.getBackendGrid().calculatePathDijkstra(startCell, clickedCell);
-
-                    // UPDATED: Using animated movement instead of instant teleportation.
-                    // Passing 'null' because the player manually chooses their post-movement actions.
                     gameManager.executeMovement(selectedViewUnit, fullPath, null);
                 } else {
                     System.out.println("Invalid movement: Target out of range.");
@@ -42,8 +41,9 @@ public class PlayerController implements Controller {
         }
         // Player clicked an occupied cell with a skill queued up (Handling Attacks/Heals)
         else if (selectedAction != null) {
-            if (!activeUnit.isExhausted()) {
-                selectedAction.execute(activeUnit, clickedCell);
+            if (!activeUnit.isExhausted() && clickedCell != null) {
+                int damage = selectedAction.execute(activeUnit, clickedCell);
+                gameManager.handleDamage(clickedCell.getUnit(), damage);
                 gameManager.setSelectedAction(null);       // Deselect skill after using it
                 gameManager.updateTurnDisplay(activeUnit); // Refresh UI to show damage
             }
