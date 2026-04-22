@@ -48,8 +48,8 @@ public class GameManager {
         }
     }
 
-    public void executeVisualMovement(Unit movingUnit, List<Cell> path) {
-        gui.executeVisualMovement(movingUnit, path);
+    public void executeMovement(Unit movingUnit, List<Cell> path, Runnable onComplete) {
+        gui.executeMovement(movingUnit, path, onComplete);
     }
 
     /**

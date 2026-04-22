@@ -3,33 +3,28 @@ package nckbill.turnbasedfinal;
 import Board.*;
 import Unit.*;
 import Controller.*;
-import Action.*;
 
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.animation.*;
+import javafx.util.Duration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class GameGUI extends Application {
 
     private BorderPane rootLayout;
     private GridPane interactiveGrid;
-    private HBox topBar;
-    private HBox bottomBar;
-    private VBox sideBar;
 
-    private Label sidebarStatsLabel;
-    private HBox queueDisplayContainer;
+    private TopBarUI topBar;
+    private BottomBarUI bottomBar;
+    private SideBarUI sideBar;
 
     private GameManager gameManager;
 
@@ -45,9 +40,20 @@ public class GameGUI extends Application {
         rootLayout = new BorderPane();
         gameManager = new GameManager(this, row, column);
 
-        initializeTopBar();
-        initializeSideBar();
-        initializeBottomBar();
+        // Initialize modular components
+        topBar = new TopBarUI(this);
+        topBar.setGameManager(gameManager);
+
+        bottomBar = new BottomBarUI();
+        bottomBar.setGameManager(gameManager);
+
+        sideBar = new SideBarUI();
+
+        // Assign to layout
+        rootLayout.setTop(topBar);
+        rootLayout.setBottom(bottomBar);
+        rootLayout.setRight(sideBar);
+
         initializeGrid();
 
         VBox mainMenuPane = new VBox(20);
@@ -68,8 +74,6 @@ public class GameGUI extends Application {
                     }
                 }
             }
-
-            // Hand over control to GameManager
             gameManager.startGame(allActiveUnits);
         });
 
@@ -82,55 +86,9 @@ public class GameGUI extends Application {
         primaryStage.show();
     }
 
-    private void initializeTopBar() {
-        topBar = new HBox(15);
-        topBar.setStyle("-fx-background-color: #d3d3d3; -fx-padding: 10px;");
-        topBar.setMinHeight(60);
-
-        Label queueTitle = new Label("Turn Queue: ");
-        queueTitle.setStyle("-fx-font-weight: bold;");
-
-        queueDisplayContainer = new HBox(10);
-        topBar.getChildren().addAll(queueTitle, queueDisplayContainer);
-        rootLayout.setTop(topBar);
-    }
-
-    private void initializeSideBar() {
-        sideBar = new VBox(15);
-        sideBar.setStyle("-fx-background-color: #e6e6e6; -fx-padding: 10px;");
-        sideBar.setMinWidth(180);
-
-        Label statsTitle = new Label("Unit Stats:");
-        statsTitle.setStyle("-fx-font-weight: bold;");
-
-        sidebarStatsLabel = new Label("Hover over a unit\nto see their stats:");
-        sidebarStatsLabel.setWrapText(true);
-
-        sideBar.getChildren().addAll(statsTitle, sidebarStatsLabel);
-        rootLayout.setRight(sideBar);
-    }
-
-    private void initializeBottomBar() {
-        bottomBar = new HBox(20);
-        bottomBar.setStyle("-fx-background-color: #c0c0c0; -fx-padding: 10px;");
-
-        Button endTurnButton = new Button("End Turn");
-        endTurnButton.setOnAction(e -> {
-            if (gameManager != null) {
-                gameManager.endPlayerTurn();
-            }
-        });
-        bottomBar.getChildren().add(endTurnButton);
-        rootLayout.setBottom(bottomBar);
-    }
-
     private void initializeGrid() {
         interactiveGrid = new GridPane();
         interactiveGrid.setStyle("-fx-background-color: #ffffff; -fx-alignment: center;");
-
-        int rows = gameManager.getBackendGrid().getRows();
-        int cols = gameManager.getBackendGrid().getColumns();
-
 
         Controller AIController = new AIController(gameManager);
         Controller playerController = new PlayerController(gameManager);
@@ -143,127 +101,38 @@ public class GameGUI extends Application {
         if (gameManager.getBackendGrid().getCell(1, 1) != null) gameManager.getBackendGrid().getCell(1, 1).setUnit(playerHealer);
         if (gameManager.getBackendGrid().getCell(7, 7) != null) gameManager.getBackendGrid().getCell(7, 7).setUnit(enemyMage);
 
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                int finalRow = row;
-                int finalCol = col;
+        int rows = gameManager.getBackendGrid().getRows();
+        int cols = gameManager.getBackendGrid().getColumns();
 
-                CellUI visualCell = new CellUI(finalRow, finalCol, sidebarStatsLabel, this);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                int finalRow = r;
+                int finalCol = c;
+
+                // Pass the specific sidebar label directly to the cell
+                CellUI visualCell = new CellUI(finalRow, finalCol, sideBar.getSidebarStatsLabel(), this);
 
                 Cell currentCell = gameManager.getBackendGrid().getCell(finalRow, finalCol);
                 if (currentCell != null && currentCell.getUnit() != null) {
                     visualCell.setUnit(currentCell.getUnit());
                 }
 
-                // Pass to GameManager
                 visualCell.setOnMouseClicked(e -> gameManager.handleCellClick(finalRow, finalCol));
-
-                interactiveGrid.add(visualCell, col, row);
+                interactiveGrid.add(visualCell, c, r);
             }
         }
+    }
+
+    public BottomBarUI getBottomBar() {
+        return bottomBar;
     }
 
     public void updateTurnDisplay(Unit active) {
-        queueDisplayContainer.getChildren().clear();
-
-        if (active != null) {
-            // Fetch upcoming turn order from the GameManager
-            Queue<Unit> turnQueue = gameManager.getTurnManager().getTurnQueue();
-
-            // Add currently active unit first
-            Button activeUnitBtn = new Button(">> " + active.getName() + " <<");
-            activeUnitBtn.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-border-color: green; -fx-border-radius: 3px;");
-            activeUnitBtn.setOnAction(e -> handleTopBarUnitClick(active));
-            queueDisplayContainer.getChildren().add(activeUnitBtn);
-
-            // Loop through the rest of the queue and add them to top bar
-            for (Unit queueUnit : turnQueue) {
-                // Skip if active unit is already added
-                if (queueUnit == active) continue;
-
-                Button queuedUnitBtn = new Button(queueUnit.getName());
-
-                // Friendly units blue, and enemy units red
-                String textColor = queueUnit.isFriendly() ? "blue" : "red";
-                queuedUnitBtn.setStyle("-fx-text-fill: " + textColor + ";");
-
-                queuedUnitBtn.setOnAction(e -> handleTopBarUnitClick(queueUnit));
-                queueDisplayContainer.getChildren().add(queuedUnitBtn);
-            }
-
-            // Auto-update the sidebar and bottom bar to show the active unit by default when the turn starts
-            gameManager.setSelectedViewUnit(active);
-            updateSidebarStats(active);
-            updateBottomBarSkills(active);
-        } else {
-            queueDisplayContainer.getChildren().add(new Label("Calculating next round..."));
-            bottomBar.getChildren().clear();
-        }
-
-        refreshVisualGrid();
-    }
-
-    /**
-     * Triggered when a player clicks a unit's name in the Top Bar queue.
-     */
-    private void handleTopBarUnitClick(Unit clickedUnit) {
-        // Tell the backend manager that a new unit is selected
-        gameManager.setSelectedViewUnit(clickedUnit);
-
-        // Update the visual stats and skills to match the newly selected unit
-        updateSidebarStats(clickedUnit);
-        updateBottomBarSkills(clickedUnit);
+        topBar.updateTurnDisplay(active);
     }
 
     public void updateSidebarStats(Unit unit) {
-        if (unit != null) {
-            sidebarStatsLabel.setText(unit.toString());
-        }
-    }
-
-    public void updateBottomBarSkills(Unit selectedUnit) {
-        bottomBar.getChildren().clear();
-
-        Button endTurnButton = new Button("End Turn");
-        endTurnButton.setOnAction(e -> {
-            if (gameManager != null) {
-                gameManager.endPlayerTurn();
-            }
-        });
-        bottomBar.getChildren().add(endTurnButton);
-
-        if (selectedUnit != null && selectedUnit.getAvailableActions() != null) {
-            Unit activeUnit = gameManager.getTurnManager().getActiveUnit();
-            boolean isMyTurn = (selectedUnit == activeUnit);
-
-            for (Action action : selectedUnit.getAvailableActions()) {
-                Button skillButton = new Button(action.getName() + " (" + action.getApCost() + " AP)");
-                skillButton.setDisable(!isMyTurn);
-                skillButton.setOnAction(event -> {
-                    gameManager.setSelectedAction(action);
-                    System.out.println("Selected skill: " + action.getName() + " (Click a target cell!)");
-                });
-                bottomBar.getChildren().add(skillButton);
-            }
-        }
-    }
-
-    public void executeVisualMovement(Unit movingUnit, List<Cell> path) {
-        interactiveGrid.setDisable(true);
-
-        for (Cell step : path) {
-            if (step.getUnit() == movingUnit) continue;
-
-            Cell currentCell = gameManager.getBackendGrid().getCell(movingUnit);
-            if (currentCell != null) currentCell.setUnit(null);
-            step.setUnit(movingUnit);
-            movingUnit.setMovementPoint(movingUnit.getMovementPoint() - 1);
-        }
-
-        System.out.println(movingUnit.getName() + " finished moving.");
-        refreshVisualGrid();
-        interactiveGrid.setDisable(false);
-        updateSidebarStats(movingUnit);
+        sideBar.updateSidebarStats(unit);
     }
 
     public void refreshVisualGrid() {
@@ -271,18 +140,13 @@ public class GameGUI extends Application {
             if (node instanceof CellUI) {
                 CellUI visualCell = (CellUI) node;
                 Cell currentCell = gameManager.getBackendGrid().getCell(visualCell.getRow(), visualCell.getCol());
-
-                if (currentCell != null) {
-                    visualCell.setUnit(currentCell.getUnit());
-                } else {
-                    visualCell.setUnit(null);
-                }
+                visualCell.setUnit(currentCell != null ? currentCell.getUnit() : null);
             }
         }
     }
 
     public void drawPathHighlight(int targetRow, int targetCol) {
-        Unit selected = gameManager.getSelectedViewUnit();
+        Unit selected = getSelectedViewUnit();
         Unit active = gameManager.getTurnManager().getActiveUnit();
 
         if (selected != null && selected == active && selected.isFriendly() && selected.getMovementPoint() > 0) {
@@ -316,5 +180,41 @@ public class GameGUI extends Application {
                 ((CellUI) node).setPathHighlight(false);
             }
         }
+    }
+
+    public void executeMovement(Unit currentUnit, List<Cell> path, Runnable onCompleted) {
+        interactiveGrid.setDisable(true);
+        Timeline timeline = new Timeline();
+        int delay = 300; // 300ms per step
+
+        for (int i = 0; i < path.size(); i++) {
+            Cell step = path.get(i);
+
+            if (step.getUnit() == currentUnit) continue;
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(delay), event -> {
+                Cell currentCell = gameManager.getBackendGrid().getCell(currentUnit);
+                if (currentCell != null) currentCell.setUnit(null);
+
+                step.setUnit(currentUnit);
+                currentUnit.setMovementPoint(currentUnit.getMovementPoint() - 1);
+
+                refreshVisualGrid();
+                updateSidebarStats(currentUnit); // Update stats to reflect remaining MP
+            });
+
+            timeline.getKeyFrames().add(keyFrame);
+            delay += 300;
+        }
+        timeline.setOnFinished(event -> {
+            System.out.println(currentUnit.getName() + " finished moving.");
+            interactiveGrid.setDisable(false);
+
+            // Trigger the callback to let the AI know it can attack now
+            if (onCompleted != null) {
+                onCompleted.run();
+            }
+        });
+
+        timeline.play();
     }
 }

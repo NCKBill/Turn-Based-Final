@@ -43,10 +43,7 @@ public class CellUI extends StackPane {
 
         if (unit != null) {
             boolean isFriendly = unit.isFriendly();
-            if (isFriendly)
-                unitIcon.setText("P");
-            else
-                unitIcon.setText("E");
+            unitIcon.setText(unit.getName().substring(0, 1));
 
             if (isFriendly)
                 background.setFill(Color.LIGHTBLUE);
@@ -60,7 +57,6 @@ public class CellUI extends StackPane {
 
     public Unit getUnit() { return currentUnit; }
     public boolean isEmpty() { return currentUnit == null; }
-
 
     public void setHighlight(boolean isReachable) {
         this.isReachable = isReachable;
@@ -125,8 +121,6 @@ public class CellUI extends StackPane {
 
             if (lockedUnit != null) {
                 sideStatsLabel.setText(lockedUnit.toString());
-            } else {
-                sideStatsLabel.setText("Hover over a unit\nto see stats.");
             }
 
             gui.clearPathHighlight();
