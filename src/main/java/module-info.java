@@ -1,6 +1,7 @@
 module nckbill.turnbasedfinal {
-    requires javafx.controls;
-    requires javafx.fxml;
+    requires transitive javafx.controls;
+    requires transitive javafx.fxml;
+    requires transitive javafx.graphics;
 
     exports nckbill.turnbasedfinal;
     exports Unit;
