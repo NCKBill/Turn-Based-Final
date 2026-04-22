@@ -21,47 +21,53 @@ public class AIController implements Controller{
         this.turnManager = gameManager.getTurnManager();
     }
 
-    @Override
     public void takeTurn(Unit aiUnit) {
         System.out.println("AI Controller taking turn for: " + aiUnit.getName());
-        // Calculate Path
+
+        // 1. Calculate Path
         List<Cell> aiPath = getAIMovePath(aiUnit);
 
-        // Move
-        if (aiPath != null && !aiPath.isEmpty()) {
-            gameManager.executeVisualMovement(aiUnit, aiPath);
-        }
+        // 2. Define what the AI should do AFTER moving (Attack and End Turn)
+        Runnable postMovementAction = () -> {
+            Cell currentCell = backendGrid.getCell(aiUnit);
+            if (currentCell != null) {
+                int[][] direction = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+                for (int[] dir : direction) {
+                    int r = currentCell.getRow() + dir[0];
+                    int c = currentCell.getCol() + dir[1];
 
-        // Attack
-        Cell currentCell = backendGrid.getCell(aiUnit);
-        if (currentCell != null) {
-            int[][] direction = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-            for (int[] dir : direction) {
-                int r = currentCell.getRow() + dir[0];
-                int c = currentCell.getCol() + dir[1];
-
-                if (backendGrid.isValidCoordinate(r, c)) {
-                    Cell neighbor = backendGrid.getCell(r, c);
-                    if (neighbor != null && neighbor.getUnit() != null) {
-                        Unit target = neighbor.getUnit();
-                        if (!aiUnit.isTargetFriendly(target) && !aiUnit.isExhausted()) {
-                            for (Action action : aiUnit.getAvailableActions()) {
-                                if (action.getType().equals("Damage")) {
-                                    System.out.println("Enemy attacks!");
-                                    int dmg = action.execute(aiUnit, neighbor);
-                                    gameManager.handleDamage(target, dmg);
-                                    break;
+                    if (backendGrid.isValidCoordinate(r, c)) {
+                        Cell neighbor = backendGrid.getCell(r, c);
+                        if (neighbor != null && neighbor.getUnit() != null) {
+                            Unit target = neighbor.getUnit();
+                            if (!aiUnit.isTargetFriendly(target) && !aiUnit.isExhausted()) {
+                                for (Action action : aiUnit.getAvailableActions()) {
+                                    if (action.getType().equals("Damage")) {
+                                        System.out.println("Enemy attacks!");
+                                        int dmg = action.execute(aiUnit, neighbor);
+                                        gameManager.handleDamage(target, dmg);
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // End turn
-        turnManager.endCurrentTurn();
-        gameManager.processNextTurn();
+            // End turn after attacking
+            turnManager.endCurrentTurn();
+            gameManager.processNextTurn();
+        };
+
+        // 3. Execute movement
+        if (aiPath != null && !aiPath.isEmpty()) {
+            // Start animation and pass the attack logic as a callback
+            gameManager.executeMovement(aiUnit, aiPath, postMovementAction);
+        } else {
+            // If the AI doesn't need to move, execute the attack logic immediately
+            postMovementAction.run();
+        }
     }
 
     @Override
@@ -98,17 +104,18 @@ public class AIController implements Controller{
         List<Cell> shortestPath = new ArrayList<>();
         int minPathLength = Integer.MAX_VALUE;
 
-        for (Unit targetUnit : turnManager.getTurnQueue()) {
+        for (Unit targetUnit : turnManager.getAllActiveUnits()) {
             if (!AIUnit.isTargetFriendly(targetUnit)) {
                 Cell targetCell = backendGrid.getCell(targetUnit);
+                if (targetCell != null) {
+                    // Calculate path
+                    // If path is valid and shorter than previous best, update
+                    List<Cell> currentPath = backendGrid.calculatePathDijkstra(startCell, targetCell);
 
-                // Calculate path
-                // If path is valid and shorter than previous best, update
-                List<Cell> currentPath = backendGrid.calculatePathDijkstra(startCell, targetCell);
-
-                if (!currentPath.isEmpty() && currentPath.size() < minPathLength) {
-                    minPathLength = currentPath.size();
-                    shortestPath = currentPath;
+                    if (!currentPath.isEmpty() && currentPath.size() < minPathLength) {
+                        minPathLength = currentPath.size();
+                        shortestPath = currentPath;
+                    }
                 }
             }
         }

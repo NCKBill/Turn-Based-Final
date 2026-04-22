@@ -1,6 +1,7 @@
 package Controller;
 
 import Unit.*;
+
 import java.util.*;
 
 public class TurnManager {
@@ -18,7 +19,7 @@ public class TurnManager {
     public void calculateTurnOrder(List<Unit> allActiveUnits) {
         this.allActiveUnits = allActiveUnits;
         movementQueue.clear();
-        for (Unit unit: allActiveUnits) {
+        for (Unit unit : allActiveUnits) {
             unit.setMovementPoint(unit.getMaxMP()); // Restores movement points
             unit.setActionPoint(unit.getMaxAP());   // Restores action points
 
@@ -67,7 +68,9 @@ public class TurnManager {
         startNextTurn();
     }
 
-    public Unit getActiveUnit() { return activeUnit; }
+    public Unit getActiveUnit() {
+        return activeUnit;
+    }
 
     public Queue<Unit> getTurnQueue() {
         Queue<Unit> arr = new LinkedList<>();
@@ -75,22 +78,36 @@ public class TurnManager {
         return arr;
     }
 
-
     public void removeUnit(Unit unit) {
-        for (UnitWrap unitWrap: movementQueue) {
-            if (unitWrap.getUnit() == unit) {
-                movementQueue.remove(unitWrap);
-                System.out.println("Unit removed from turn queue.");
-            }
-        }
+        movementQueue.removeIf(unitWrap -> unitWrap.getUnit() == unit);
+        allActiveUnits.remove(unit);
+        System.out.println(unit.getName() + " removed.");
+    }
+
+
+    public List<Unit> getAllActiveUnits() {
+        return allActiveUnits;
+    }
+
+    public void setAllActiveUnits(List<Unit> allActiveUnits) {
+        this.allActiveUnits = allActiveUnits;
     }
 
     private class UnitWrap {
         private Unit unit;
         private int roll;
-        UnitWrap (Unit unit, int roll) { this.unit = unit; this.roll = roll; }
 
-        public Unit getUnit() { return unit; }
-        public int getRoll() { return roll; }
+        UnitWrap(Unit unit, int roll) {
+            this.unit = unit;
+            this.roll = roll;
+        }
+
+        public Unit getUnit() {
+            return unit;
+        }
+
+        public int getRoll() {
+            return roll;
+        }
     }
 }

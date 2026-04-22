@@ -31,7 +31,10 @@ public class PlayerController implements Controller {
 
                 if (reachable.contains(clickedCell)) {
                     List<Cell> fullPath = gameManager.getBackendGrid().calculatePathDijkstra(startCell, clickedCell);
-                    gameManager.executeVisualMovement(selectedViewUnit, fullPath);
+
+                    // UPDATED: Using animated movement instead of instant teleportation.
+                    // Passing 'null' because the player manually chooses their post-movement actions.
+                    gameManager.executeMovement(selectedViewUnit, fullPath, null);
                 } else {
                     System.out.println("Invalid movement: Target out of range.");
                 }
