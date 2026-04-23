@@ -28,6 +28,37 @@ public abstract class Action {
 
     public abstract int execute(Unit unit, Cell target);
 
+    public boolean canExecute(Unit unit, Cell start, Cell target) {
+        boolean canExecute = true;
+        if (unit.getActionPoint() < this.getApCost()) {
+            System.out.println("Not enough AP");
+            canExecute = false;
+        }
+
+        if (!isInRange(start, target)) {
+            System.out.println("Not in range.");
+            canExecute = false;
+        }
+
+        if (!this.targetFriendly && unit.isTargetFriendly(target.getUnit())) {
+            System.out.println("Cannot damage allies.");
+            canExecute = false;
+        }
+
+        if (this.targetFriendly && !unit.isTargetFriendly(target.getUnit())) {
+            System.out.println("Cannot buff enemies.");
+            canExecute = false;
+        }
+        return canExecute;
+    }
+    public boolean isInRange(Cell start, Cell target) {
+        int x = target.getCol() - start.getCol();
+        int y = target.getRow() - start.getRow();
+        double delta = Math.pow(x, 2) + Math.pow(y, 2);
+        int range = (int) Math.sqrt(delta);
+        return this.range >= range;
+    }
+
     public String getName() {
         return name;
     }

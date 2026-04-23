@@ -56,7 +56,6 @@ public class GameManager {
      * GUI passes coordinates
      * Method decides what to do
      */
-
     public void handleCellClick(int row, int col) {
         Unit activeUnit = turnManager.getActiveUnit();
         Cell clickedCell = backendGrid.getCell(row, col);
@@ -91,6 +90,11 @@ public class GameManager {
             gui.refreshVisualGrid(); // remove from gui grid
             gui.updateTurnDisplay(turnManager.getActiveUnit()); // remove from top bar
         }
+    }
+
+    public void handleHeal(Unit target, int heal) {
+        int potentialHP = target.getHealthPoint() + heal;
+        target.setHealthPoint(Math.min(potentialHP, target.getMaxHP()));
     }
 
     public void endPlayerTurn() {

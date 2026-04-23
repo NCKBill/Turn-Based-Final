@@ -3,6 +3,7 @@ package Controller;
 import Board.Cell;
 import Unit.Unit;
 import Action.Action;
+
 import java.util.List;
 
 public class PlayerController implements Controller {
@@ -39,14 +40,28 @@ public class PlayerController implements Controller {
                 }
             }
         }
+
         // Player clicked an occupied cell with a skill queued up (Handling Attacks/Heals)
         else if (selectedAction != null) {
-            if (!activeUnit.isExhausted() && clickedCell != null) {
-                int damage = selectedAction.execute(activeUnit, clickedCell);
-                gameManager.handleDamage(clickedCell.getUnit(), damage);
+            if (clickedCell != null) {
+                int damage = 0;
+                boolean damageEnemies = true;
+                if (selectedAction.canExecute(activeUnit, gameManager.getBackendGrid().getCell(activeUnit), clickedCell)) {
+                    damage = selectedAction.execute(activeUnit, clickedCell);
+
+                    if (selectedAction.isTargetFriendly())
+                        damageEnemies = false;
+                }
+                if (damageEnemies)
+                    gameManager.handleDamage(clickedCell.getUnit(), damage);
+                else {
+                    gameManager.handleHeal(clickedCell.getUnit(), damage);
+                }
                 gameManager.setSelectedAction(null);       // Deselect skill after using it
                 gameManager.updateTurnDisplay(activeUnit); // Refresh UI to show damage
             }
+        } else {
+            System.out.println("No valid target.");
         }
     }
 }
