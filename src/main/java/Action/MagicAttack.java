@@ -23,10 +23,10 @@ public class MagicAttack extends Action {
 
                 System.out.println(target.getName() + " was attacked for " + damage + " HP.");
             } else {
-                // prevent player from accidentally attacking a friendly unit
+                // Prevent player from accidentally attacking a friendly unit
                 System.out.println("Invalid target! " + this.getName() + " can only be cast on enemy units.");
             }
-            // deduct AP cost
+            // Deduct AP cost
             attacker.setActionPoint(attacker.getActionPoint() - this.getApCost());
         }
         return damage;

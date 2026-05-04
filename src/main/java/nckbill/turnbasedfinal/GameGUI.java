@@ -40,7 +40,6 @@ public class GameGUI extends Application {
         rootLayout = new BorderPane();
         gameManager = new GameManager(this, row, column);
 
-        // Initialize modular components
         topBar = new TopBarUI(this);
         topBar.setGameManager(gameManager);
 
@@ -49,7 +48,6 @@ public class GameGUI extends Application {
 
         sideBar = new SideBarUI();
 
-        // Assign to layout
         rootLayout.setTop(topBar);
         rootLayout.setBottom(bottomBar);
         rootLayout.setRight(sideBar);
@@ -90,16 +88,18 @@ public class GameGUI extends Application {
         interactiveGrid = new GridPane();
         interactiveGrid.setStyle("-fx-background-color: #ffffff; -fx-alignment: center;");
 
-        Controller AIController = new AIController(gameManager);
+        Controller AIController = new AIController(gameManager, "ranged");
+        Controller AIController2 = new AIController(gameManager, "tank");
+
         Controller playerController = new PlayerController(gameManager);
 
-        Unit playerTank = new Tank(true, playerController);
-        Unit playerHealer = new Healer(true, playerController);
-        Unit enemyMage = new Mage(false, AIController);
+//        Unit playerTank = new Tank(true, playerController);
+        Unit allyMage = new Mage(true, AIController);
+        Unit enemyTank = new Tank(false, AIController2);
 
-        if (gameManager.getBackendGrid().getCell(2, 2) != null) gameManager.getBackendGrid().getCell(2, 2).setUnit(playerTank);
-        if (gameManager.getBackendGrid().getCell(1, 1) != null) gameManager.getBackendGrid().getCell(1, 1).setUnit(playerHealer);
-        if (gameManager.getBackendGrid().getCell(7, 7) != null) gameManager.getBackendGrid().getCell(7, 7).setUnit(enemyMage);
+//        if (gameManager.getBackendGrid().getCell(2, 2) != null) gameManager.getBackendGrid().getCell(2, 2).setUnit(playerTank);
+        if (gameManager.getBackendGrid().getCell(1, 1) != null) gameManager.getBackendGrid().getCell(1, 1).setUnit(allyMage);
+        if (gameManager.getBackendGrid().getCell(7, 7) != null) gameManager.getBackendGrid().getCell(7, 7).setUnit(enemyTank);
 
         int rows = gameManager.getBackendGrid().getRows();
         int cols = gameManager.getBackendGrid().getColumns();
@@ -149,7 +149,7 @@ public class GameGUI extends Application {
         Unit selected = getSelectedViewUnit();
         Unit active = gameManager.getTurnManager().getActiveUnit();
 
-        if (selected != null && selected == active && selected.isFriendly() && selected.getMovementPoint() > 0) {
+        if (selected != null && selected == active && selected.isFriendly() && selected.getMovementPoint() > 0 && selected.getUnitController() instanceof PlayerController) {
             Cell startCell = gameManager.getBackendGrid().getCell(selected);
             Cell targetCell = gameManager.getBackendGrid().getCell(targetRow, targetCol);
 
@@ -209,7 +209,7 @@ public class GameGUI extends Application {
             System.out.println(currentUnit.getName() + " finished moving.");
             interactiveGrid.setDisable(false);
 
-            // Trigger the callback to let the AI know it can attack now
+            // Let the AI know it can attack now
             if (onCompleted != null) {
                 onCompleted.run();
             }

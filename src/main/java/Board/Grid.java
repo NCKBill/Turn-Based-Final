@@ -48,6 +48,7 @@ public class Grid {
         return x >= 0 && x < rows && y >= 0 && y < columns;
     }
 
+    // Wrapper class
     private class PathNode implements Comparable<PathNode> {
         Cell cell;
         int cost;

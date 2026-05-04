@@ -36,7 +36,7 @@ public abstract class Unit {
         this.name = name;
         this.healthPoint = healthPoint;
         this.actionPoint = 6;
-        this.movementPoint = 5;
+        this.movementPoint = 2;
         this.strength = strength;
         this.power = power;
         this.defense = defense;

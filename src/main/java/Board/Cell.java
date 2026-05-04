@@ -15,12 +15,10 @@ public class Cell {
         this.row = row;
         this.col = col;
         this.terrainType = terrainType;
-        this.occupant = null; // empty cell at the start
+        this.occupant = null;
     }
 
-    /**
-     * Checks if the cell currently holds a unit
-     */
+    //Checks if the cell currently holds a unit
     public boolean isOccupied() {
         return occupant != null;
     }

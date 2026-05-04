@@ -8,15 +8,13 @@ import Unit.Unit;
  */
 
 public abstract class Action {
-    // Encapsulation of action properties
-    private String type;
+    private String type; // Buff | Damage
     private String name;
-    private int apCost;
-    private int value;
+    private int apCost; // apCost out of 6
+    private int value; // default damage/heal before modifier
     private int range;
-    private boolean targetFriendly;
+    private boolean targetFriendly; // can target friendly or not
 
-    // Constructor to initialize the action's properties
     public Action(String type, String name, int apCost, int value, int range, boolean targetFriendly) {
         this.type = type;
         this.name = name;
@@ -28,6 +26,13 @@ public abstract class Action {
 
     public abstract int execute(Unit unit, Cell target);
 
+    /**
+     *
+     * @param unit: current unit
+     * @param start: cell of the current unit
+     * @param target: cell of the targeted unit
+     * @return whether the action casting from start can be executed to target
+     */
     public boolean canExecute(Unit unit, Cell start, Cell target) {
         boolean canExecute = true;
         if (unit.getActionPoint() < this.getApCost()) {
@@ -51,6 +56,10 @@ public abstract class Action {
         }
         return canExecute;
     }
+
+    // Calculate hypotenuse for range
+    // Get the rounded down value
+    // Return whether the action can reach target
     public boolean isInRange(Cell start, Cell target) {
         int x = target.getCol() - start.getCol();
         int y = target.getRow() - start.getRow();

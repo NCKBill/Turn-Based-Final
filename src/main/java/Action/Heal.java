@@ -14,18 +14,18 @@ public class Heal extends Action {
         Unit target = targetCell.getUnit();
         int heal = 0;
         if (target != null) {
-            // check if target is an ally
+            // Check if target is an ally
             if (healer.isTargetFriendly(target)) {
                 System.out.println(healer.getName() + " casts " + this.getName() + " on " + target.getName());
 
-                // heal target
-                // deduct ap cost
+                // Heal target
+                // Deduct ap cost
                 heal = this.getValue() + healer.getPower();
                 healer.setActionPoint(healer.getActionPoint() - this.getApCost());
 
                 System.out.println(target.getName() + " was healed for " + this.getValue() + " HP.");
             } else {
-                // prevent player from accidentally healing an enemy unit
+                // Prevent player from accidentally healing an enemy unit
                 System.out.println("Invalid target! " + this.getName() + " can only be cast on friendly units.");
             }
         } else {
