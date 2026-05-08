@@ -68,8 +68,9 @@ public class Grid {
 
     /**
      * Calculate the shortest path between starting cell and end cell using Dijkstra algorithm
+     *
      * @param start x and y coordinate of the current unit
-     * @param end x and y coordinate of the selected cell
+     * @param end   x and y coordinate of the selected cell
      * @return List of Cells representing the best path to take
      */
     public List<Cell> calculatePathDijkstra(Cell start, Cell end) {
@@ -91,13 +92,12 @@ public class Grid {
             for (int[] dir : direction) {
                 int nextX = currentCell.getRow() + dir[0];
                 int nextY = currentCell.getCol() + dir[1];
+                Cell gridNeighbor = getCell(nextX, nextY);
 
-                if (isValidCoordinate(nextX, nextY)) {
-                    Cell gridNeighbor = getCell(nextX, nextY);
-
+                if (gridNeighbor != null) {
                     if (gridNeighbor.isOccupied() && !gridNeighbor.equals(end)) continue;
 
-                    int moveCost = 1;
+                    int moveCost = gridNeighbor.getTerrainCost();
                     int totalCost = current.cost + moveCost;
 
                     // Compare total cost of current path found to previously recorded path of the neighbour
@@ -113,6 +113,7 @@ public class Grid {
 
     /**
      * Turn PathNode into List of Cells to represent path
+     *
      * @param targetNode Root node
      * @return List of children Cells of the root node
      */
@@ -161,41 +162,45 @@ public class Grid {
 
     /**
      * Calculate all reachable Cells within the unit's MP limit
-     * @param startCell Origin Cell of the Unit
-     * @param mpLimit MP of the Unit
+     *
+     * @param startCell Origin cell of the Unit
+     * @param mpLimit   MP of the Unit
      * @return a list of all Cells the unit can reach within the movement limit
      */
     public List<Cell> getReachableCells(Cell startCell, int mpLimit) {
         // Map tracks visited cells & their distance
-        Map<Cell, Integer> distances = new HashMap<>();
-        Queue<Cell> queue = new LinkedList<>();
+        Map<Cell, Integer> bestCosts = new HashMap<>();
+        PriorityQueue<PathNode> queue = new PriorityQueue<>();
 
-        distances.put(startCell, 0);
-        queue.add(startCell);
+        bestCosts.put(startCell, 0);
+        queue.add(new PathNode(startCell, 0, null));
 
         while (!queue.isEmpty()) {
-            Cell current = queue.poll();
-            int currentCost = distances.get(current);
-
-            // Stop expanding if hit the limit MP
-            if (currentCost >= mpLimit) continue;
+            PathNode current = queue.poll();
+            Cell currentCell = current.cell;
 
             for (int[] dir : direction) {
-                int newRow = current.getRow() + dir[0];
-                int newCol = current.getCol() + dir[1];
+                int newRow = currentCell.getRow() + dir[0];
+                int newCol = currentCell.getCol() + dir[1];
                 Cell neighbor = getCell(newRow, newCol);
 
-                // Check if valid, walkable, and not visited
-                if (neighbor != null && neighbor.getUnit() == null && !distances.containsKey(neighbor)) {
-                    distances.put(neighbor, currentCost + 1);
-                    queue.add(neighbor);
+                // Check if valid and walkable
+                if (neighbor != null && neighbor.getUnit() == null) {
+                    int moveCost = neighbor.getTerrainCost();
+                    int totalCost = current.cost + moveCost;
+
+                    if (totalCost <= mpLimit && totalCost < bestCosts.getOrDefault(neighbor, Integer.MAX_VALUE)) {
+                        bestCosts.put(neighbor, totalCost);
+                        queue.add(new PathNode(neighbor, totalCost, current));
+                    }
                 }
             }
         }
 
-        // Remove the start cell to prevent unit from moving in place
-        distances.remove(startCell);
+        // Remove start cell to prevent unit from moving in place
+        bestCosts.remove(startCell);
 
-        return new ArrayList<>(distances.keySet());
+        return new ArrayList<>(bestCosts.keySet());
+
     }
 }

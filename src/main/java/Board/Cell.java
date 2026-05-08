@@ -18,6 +18,11 @@ public class Cell {
         this.occupant = null;
     }
 
+    public Cell(int row, int col) {
+        this.row = row;
+        this.col = col;
+    }
+
     //Checks if the cell currently holds a unit
     public boolean isOccupied() {
         return occupant != null;
@@ -53,5 +58,9 @@ public class Cell {
 
     public void setTerrainType(String terrainType) {
         this.terrainType = terrainType;
+    }
+
+    public int getTerrainCost() {
+        return "Normal".equals(this.terrainType) ? 1 : Integer.MAX_VALUE;
     }
 }
