@@ -6,9 +6,6 @@ import Controller.Controller;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- */
 public abstract class Unit {
     private String name;
     private int healthPoint;
@@ -22,15 +19,9 @@ public abstract class Unit {
     private int defense; // HP = HP - (Physical Damage - defense > 0)
     private int defenseMagic; // HP = HP - (Magic Damage - defenseMagic > 0)
     private int initiation; // increase chance to go first
-    // Team identification
     private boolean friendly; // true for friendly, false for enemy
-
-
-    // Strategy Pattern for Player vs AI control
     private Controller unitController;
-
-    // List to hold skills/actions
-    private List<Action> availableActions;
+    private List<Action> availableActions;    // List to hold skills/actions
 
     public Unit(String name, int healthPoint, int strength, int power, int defense, int defenseMagic, int initiation, boolean friendly, Controller unitController) {
         this.name = name;

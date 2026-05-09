@@ -93,7 +93,7 @@ public class GameGUI extends Application {
 
         Controller playerController = new PlayerController(gameManager);
 
-//        Unit playerTank = new Tank(true, playerController);
+//      Unit playerTank = new Tank(true, playerController);
         Unit allyMage = new Mage(true, AIController);
         Unit enemyTank = new Tank(false, AIController2);
 

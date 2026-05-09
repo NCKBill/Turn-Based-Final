@@ -38,11 +38,10 @@ public class AIStrategyTank implements AIStrategy {
             if (targetCell == null) continue;
 
             List<Cell> currentPath = gm.getBackendGrid().calculatePathDijkstra(startCell, targetCell);
-
-            // If path valid and shorter, keep it [cite: 56]
+            // Keep shortest valid path
             if (!currentPath.isEmpty() && currentPath.size() < minPathLength) {
                 minPathLength = currentPath.size();
-                // Remove the target cell so we stop adjacent to them
+                // Move adjacent to enemy unit instead of on top
                 if (currentPath.get(currentPath.size() - 1).getUnit() != null) {
                     currentPath.remove(currentPath.size() - 1);
                 }
