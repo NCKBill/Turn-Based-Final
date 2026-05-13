@@ -42,14 +42,14 @@ public class AIStrategyTank implements AIStrategy {
             if (!currentPath.isEmpty() && currentPath.size() < minPathLength) {
                 minPathLength = currentPath.size();
                 // Move adjacent to enemy unit instead of on top
-                if (currentPath.get(currentPath.size() - 1).getUnit() != null) {
-                    currentPath.remove(currentPath.size() - 1);
+                if (currentPath.getLast().getUnit() != null) {
+                    currentPath.removeLast();
                 }
                 bestPath = currentPath;
             }
         }
         // Limit path to movement points
-        int moveLimit = Math.min(bestPath.size(), self.getMovementPoint());
+        int moveLimit = Math.min(bestPath.size(), self.getMovementPoint() + 1);
         return bestPath.subList(0, moveLimit);
     }
 

@@ -42,7 +42,7 @@ public class AIStrategyRanged implements AIStrategy {
             }
         }
 
-        // If can't attack, move closer
+        // if unit can't attack, move closer
         List<Cell> path = gm.getBackendGrid().calculatePathDijkstra(selfCell, targetCell);
 
         // Move towards target
