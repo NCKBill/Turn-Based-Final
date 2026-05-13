@@ -21,10 +21,13 @@ public abstract class Unit {
     private int initiation; // increase chance to go first
     private boolean friendly; // true for friendly, false for enemy
     private Controller unitController;
-    private List<Action> availableActions;    // List to hold skills/actions
+    private List<Action> availableActions; // List to hold skills/actions
 
     public Unit(String name, int healthPoint, int strength, int power, int defense, int defenseMagic, int initiation, boolean friendly, Controller unitController) {
-        this.name = name;
+        String temp = " Ally";
+        if (!friendly)
+            temp = " Enemy";
+        this.name = name + temp;
         this.healthPoint = healthPoint;
         this.actionPoint = 6;
         this.movementPoint = 2;
@@ -163,14 +166,14 @@ public abstract class Unit {
     @Override
     public String toString() {
         return
-                "Name: " + name +
-                "\nHP: " + healthPoint +
-                "\nAP: " + actionPoint +
-                "\nMP: " + movementPoint +
-                "\nSTR: " + strength +
-                "\nPOW: " + power +
-                "\nDEF: " + defense +
-                "\nMAG DEF: " + defenseMagic +
-                "\nINIT: " + initiation;
+            "Name: " + name +
+            "\nHP: " + healthPoint +
+            "\nAP: " + actionPoint +
+            "\nMP: " + movementPoint +
+            "\nSTR: " + strength +
+            "\nPOW: " + power +
+            "\nDEF: " + defense +
+            "\nMAG DEF: " + defenseMagic +
+            "\nINIT: " + initiation;
     }
 }

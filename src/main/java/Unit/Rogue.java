@@ -7,7 +7,9 @@ import Controller.Controller;
 public class Rogue extends Unit{
     public Rogue(boolean friendly, Controller unitController) {
         // super(name, HP, STR, POW, DEF, MAG DEF, INIT, friendly, controller)
-        super("Tank", 120, 15, 0, 10, 5, 2, friendly, unitController);
+        super("Rogue", 70, 15, 0, 0, 0, 5, friendly, unitController);
+        this.setMovementPoint(4);
+        this.setMaxMP(4);
         this.addAction(new PhysicalAttack("Damage", "Assassinate", 6, 5, 1, false));
         this.addAction(new DefAttack("Damage", "Dagger Spray", 6, 3, 3, false));
     }
