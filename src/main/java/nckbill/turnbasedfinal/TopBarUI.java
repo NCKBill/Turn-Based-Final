@@ -12,8 +12,9 @@ public class TopBarUI extends HBox {
     private GameGUI mainGUI;
     private HBox queueDisplayContainer;
 
-    public TopBarUI(GameGUI mainGUI) {
+    public TopBarUI(GameGUI mainGUI, GameManager gameManager) {
         this.mainGUI = mainGUI;
+        this.gameManager = gameManager;
 
         this.setSpacing(15);
         this.setStyle("-fx-background-color: #d3d3d3; -fx-padding: 10px;");
@@ -24,10 +25,6 @@ public class TopBarUI extends HBox {
 
         queueDisplayContainer = new HBox(10);
         this.getChildren().addAll(queueTitle, queueDisplayContainer);
-    }
-
-    public void setGameManager(GameManager gameManager) {
-        this.gameManager = gameManager;
     }
 
     public void updateTurnDisplay(Unit active) {

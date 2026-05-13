@@ -9,7 +9,8 @@ import javafx.scene.layout.HBox;
 public class BottomBarUI extends HBox {
     private GameManager gameManager;
 
-    public BottomBarUI() {
+    public BottomBarUI(GameManager gameManager) {
+        this.gameManager = gameManager;
         this.setSpacing(20);
         this.setStyle("-fx-background-color: #c0c0c0; -fx-padding: 10px;");
     }
