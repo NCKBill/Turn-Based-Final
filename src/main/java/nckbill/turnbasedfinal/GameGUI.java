@@ -5,12 +5,11 @@ import Unit.*;
 import Controller.*;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.animation.*;
 import javafx.util.Duration;
@@ -18,10 +17,10 @@ import javafx.util.Duration;
 import java.util.*;
 
 public class GameGUI extends Application {
-
     private BorderPane rootLayout;
     private GridPane interactiveGrid;
 
+    private StartUI startUI;
     private TopBarUI topBar;
     private BottomBarUI bottomBar;
     private SideBarUI sideBar;
@@ -39,67 +38,45 @@ public class GameGUI extends Application {
     public void start(Stage primaryStage) {
         rootLayout = new BorderPane();
         gameManager = new GameManager(this, row, column);
-
-        topBar = new TopBarUI(this);
-        topBar.setGameManager(gameManager);
-
-        bottomBar = new BottomBarUI();
-        bottomBar.setGameManager(gameManager);
-
+        // initialize all boxes (visual on screen)
+        topBar = new TopBarUI(this, gameManager);
+        bottomBar = new BottomBarUI(gameManager);
         sideBar = new SideBarUI();
 
-        rootLayout.setTop(topBar);
-        rootLayout.setBottom(bottomBar);
-        rootLayout.setRight(sideBar);
+        startUI = new StartUI(this);
+        rootLayout.setCenter(startUI);
 
         initializeGrid();
-
-        VBox mainMenuPane = new VBox(20);
-        mainMenuPane.setStyle("-fx-alignment: center;");
-
-        Button startButton = new Button("Start Game");
-        startButton.setStyle("-fx-font-size: 24px;");
-
-        startButton.setOnAction(event -> {
-            rootLayout.setCenter(interactiveGrid);
-
-            List<Unit> allActiveUnits = new ArrayList<>();
-            for (int r = 0; r < gameManager.getBackendGrid().getRows(); r++) {
-                for (int c = 0; c < gameManager.getBackendGrid().getColumns(); c++) {
-                    Cell cell = gameManager.getBackendGrid().getCell(r, c);
-                    if (cell != null && cell.getUnit() != null) {
-                        allActiveUnits.add(cell.getUnit());
-                    }
-                }
-            }
-            gameManager.startGame(allActiveUnits);
-        });
-
-        mainMenuPane.getChildren().add(startButton);
-        rootLayout.setCenter(mainMenuPane);
-
+        // Start the game
         Scene scene = new Scene(rootLayout, 1000, 800);
         primaryStage.setTitle("Turn-Based Strategy Game");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+    public void showGameGUI() {
+        rootLayout.setTop(topBar);
+        rootLayout.setBottom(bottomBar);
+        rootLayout.setRight(sideBar);
+    }
+    public void hideGameGUI() {
+        rootLayout.setTop(null);
+        rootLayout.setBottom(null);
+        rootLayout.setRight(null);
+    }
+    // Method to return to start menu after game end (win/loss)
+    private void returnToMainMenu() {
+        javafx.application.Platform.runLater(() -> {
+            hideGameGUI();
+            rootLayout.setCenter(startUI);
+            interactiveGrid.setDisable(false);
+            bottomBar.initializeDefault();
+        });
+    }
 
+    // method to initialize grid
     private void initializeGrid() {
         interactiveGrid = new GridPane();
         interactiveGrid.setStyle("-fx-background-color: #ffffff; -fx-alignment: center;");
-
-        Controller AIController = new AIController(gameManager, "ranged");
-        Controller AIController2 = new AIController(gameManager, "tank");
-
-        Controller playerController = new PlayerController(gameManager);
-
-//      Unit playerTank = new Tank(true, playerController);
-        Unit allyMage = new Mage(true, AIController);
-        Unit enemyTank = new Tank(false, AIController2);
-
-//        if (gameManager.getBackendGrid().getCell(2, 2) != null) gameManager.getBackendGrid().getCell(2, 2).setUnit(playerTank);
-        if (gameManager.getBackendGrid().getCell(1, 1) != null) gameManager.getBackendGrid().getCell(1, 1).setUnit(allyMage);
-        if (gameManager.getBackendGrid().getCell(7, 7) != null) gameManager.getBackendGrid().getCell(7, 7).setUnit(enemyTank);
 
         int rows = gameManager.getBackendGrid().getRows();
         int cols = gameManager.getBackendGrid().getColumns();
@@ -109,7 +86,6 @@ public class GameGUI extends Application {
                 int finalRow = r;
                 int finalCol = c;
 
-                // Pass the specific sidebar label directly to the cell
                 CellUI visualCell = new CellUI(finalRow, finalCol, sideBar.getSidebarStatsLabel(), this);
 
                 Cell currentCell = gameManager.getBackendGrid().getCell(finalRow, finalCol);
@@ -157,8 +133,8 @@ public class GameGUI extends Application {
                 List<Cell> fullPath = gameManager.getBackendGrid().calculatePathDijkstra(startCell, targetCell);
 
                 if (fullPath != null && !fullPath.isEmpty()) {
-                    int mpLimit = selected.getMovementPoint();
-                    for (int i = 0; i < Math.min(fullPath.size(), mpLimit); i++) {
+                    int moveLimit = Math.min(fullPath.size(), selected.getMovementPoint() + 1);
+                    for (int i = 0; i < moveLimit; i++) {
                         Cell step = fullPath.get(i);
                         for (Node node : interactiveGrid.getChildren()) {
                             if (node instanceof CellUI) {
@@ -185,7 +161,7 @@ public class GameGUI extends Application {
     public void executeMovement(Unit currentUnit, List<Cell> path, Runnable onCompleted) {
         interactiveGrid.setDisable(true);
         Timeline timeline = new Timeline();
-        int delay = 300; // 300ms per step
+        int delay = 300; // 300ms every step
 
         for (int i = 0; i < path.size(); i++) {
             Cell step = path.get(i);
@@ -216,5 +192,46 @@ public class GameGUI extends Application {
         });
 
         timeline.play();
+    }
+
+    //  disable input after game over
+    public void showGameOver(String message) {
+        Platform.runLater(() -> {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+            alert.setTitle("Game Over");
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+
+            alert.showAndWait();
+
+            interactiveGrid.setDisable(true);
+
+            returnToMainMenu();
+            gameManager.resetGame();
+        });
+    }
+
+    public GameManager getGameManager() {
+        return gameManager;
+    }
+
+    public void setGameManager(GameManager gameManager) {
+        this.gameManager = gameManager;
+    }
+
+    public BorderPane getRootLayout() {
+        return rootLayout;
+    }
+
+    public void setRootLayout(BorderPane rootLayout) {
+        this.rootLayout = rootLayout;
+    }
+
+    public GridPane getInteractiveGrid() {
+        return interactiveGrid;
+    }
+
+    public void setInteractiveGrid(GridPane interactiveGrid) {
+        this.interactiveGrid = interactiveGrid;
     }
 }

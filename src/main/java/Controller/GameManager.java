@@ -9,12 +9,16 @@ import nckbill.turnbasedfinal.*;
 import java.util.List;
 
 public class GameManager {
+    public int enemyCount = 1;
+    public int allyCount = 1;
     private Grid backendGrid;
     private TurnManager turnManager;
     private GameGUI gui;
 
     private Action selectedAction;
     private Unit selectedViewUnit;
+    private int allyCountCurrent = 0;
+    private int enemiesCountCurrent = 0;
 
     public GameManager(GameGUI gui, int rows, int cols) {
         this.gui = gui;
@@ -23,6 +27,15 @@ public class GameManager {
     }
 
     public void startGame(List<Unit> allActiveUnits) {
+        allyCountCurrent = 0;
+        enemiesCountCurrent = 0;
+
+        for (int i = 0; i < allActiveUnits.size(); i++) {
+            if (allActiveUnits.get(i).isFriendly())
+                allyCountCurrent++;
+            else
+                enemiesCountCurrent++;
+        }
         turnManager.calculateTurnOrder(allActiveUnits);
         turnManager.startNextTurn();
         processNextTurn();
@@ -42,8 +55,6 @@ public class GameManager {
         gui.updateTurnDisplay(activeUnit);
 
         if (activeUnit != null) {
-            // If AI, calculates paths and attacks
-            // If Player, yields to the JavaFX GUI
             activeUnit.performAction();
         }
     }
@@ -82,16 +93,29 @@ public class GameManager {
     // Call this whenever damage is applied
     public void handleDamage(Unit target, int damage) {
         target.setHealthPoint(target.getHealthPoint() - damage);
-
         // Check for Death
         if (target.getHealthPoint() <= 0) {
+            if (target.isFriendly())
+                allyCountCurrent--;
+            else
+                enemiesCountCurrent--;
             backendGrid.getCell(target).setUnit(null); // remove from grid
             turnManager.removeUnit(target); // remove from queue
             gui.refreshVisualGrid(); // remove from gui grid
             gui.updateTurnDisplay(turnManager.getActiveUnit()); // remove from top bar
+            if (enemiesCountCurrent <= 0)
+                handleEnd("VICTORY!");
+            else if (allyCountCurrent <= 0) {
+                handleEnd("DEFEAT!");
+            }
         }
     }
 
+    private void handleEnd(String message) {
+        System.out.println(message);
+        gui.showGameOver(message);
+        turnManager.endGame = true;
+    }
     public void handleHeal(Unit target, int heal) {
         int potentialHP = target.getHealthPoint() + heal;
         target.setHealthPoint(Math.min(potentialHP, target.getMaxHP()));
@@ -102,6 +126,16 @@ public class GameManager {
         processNextTurn();
     }
 
+    public void resetGame() {
+        backendGrid = new Grid(backendGrid.getRows(), backendGrid.getColumns());
+        turnManager = new TurnManager();
+        this.allyCountCurrent = 0;
+        this.enemiesCountCurrent = 0;
+        this.selectedAction = null;
+        this.selectedViewUnit = null;
+
+        gui.refreshVisualGrid();
+    }
     public Grid getBackendGrid() {
         return backendGrid;
     }
