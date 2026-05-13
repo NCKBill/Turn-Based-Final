@@ -9,7 +9,7 @@ public class TurnManager {
     private Random dice;
     private Unit activeUnit;
     private List<Unit> allActiveUnits;
-
+    public boolean endGame = false;
     public TurnManager() {
         this.movementQueue = new PriorityQueue<>((a, b) -> b.getRoll() - a.getRoll());
         this.dice = new Random();
@@ -52,10 +52,13 @@ public class TurnManager {
 
     public void startNextTurn() {
         activeUnit = getNextUnit();
+
         if (activeUnit == null) {
             if (!allActiveUnits.isEmpty()) {
-                calculateTurnOrder(this.allActiveUnits);
-                startNextTurn();
+                if (!endGame) {
+                    calculateTurnOrder(this.allActiveUnits);
+                    startNextTurn();
+                }
             }
         }
     }
@@ -83,7 +86,6 @@ public class TurnManager {
         allActiveUnits.remove(unit);
         System.out.println(unit.getName() + " removed.");
     }
-
 
     public List<Unit> getAllActiveUnits() {
         return allActiveUnits;
