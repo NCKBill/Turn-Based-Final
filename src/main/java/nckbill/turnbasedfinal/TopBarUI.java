@@ -1,20 +1,18 @@
 package nckbill.turnbasedfinal;
 
-import Controller.GameManager;
 import Unit.Unit;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+
 import java.util.Queue;
 
 public class TopBarUI extends HBox {
-    private GameManager gameManager;
-    private GameGUI mainGUI;
-    private HBox queueDisplayContainer;
+    private final GameGUI gui;
+    private final HBox queueDisplayContainer;
 
-    public TopBarUI(GameGUI mainGUI, GameManager gameManager) {
-        this.mainGUI = mainGUI;
-        this.gameManager = gameManager;
+    public TopBarUI(GameGUI gui) {
+        this.gui = gui;
 
         this.setSpacing(15);
         this.setStyle("-fx-background-color: #d3d3d3; -fx-padding: 10px;");
@@ -31,7 +29,7 @@ public class TopBarUI extends HBox {
         queueDisplayContainer.getChildren().clear();
 
         if (active != null) {
-            Queue<Unit> turnQueue = gameManager.getTurnManager().getTurnQueue();
+            Queue<Unit> turnQueue = gui.getGameManager().getTurnManager().getTurnQueue();
 
             Button activeUnitBtn = new Button(">> " + active.getName() + " <<");
             activeUnitBtn.setStyle("-fx-text-fill: green; -fx-font-weight: bold; -fx-border-color: green; -fx-border-radius: 3px;");
@@ -49,20 +47,20 @@ public class TopBarUI extends HBox {
                 queueDisplayContainer.getChildren().add(queuedUnitBtn);
             }
 
-            gameManager.setSelectedViewUnit(active);
-            mainGUI.updateSidebarStats(active);
-            mainGUI.getBottomBar().updateBottomBarSkills(active);
+            gui.getGameManager().setSelectedViewUnit(active);
+            gui.updateSidebarStats(active);
+            gui.getBottomBar().updateBottomBarSkills(active);
         } else {
             queueDisplayContainer.getChildren().add(new Label("Calculating next round..."));
-            mainGUI.getBottomBar().getChildren().clear();
+            gui.getBottomBar().getChildren().clear();
         }
 
-        mainGUI.refreshVisualGrid();
+        gui.refreshVisualGrid();
     }
 
     private void handleTopBarUnitClick(Unit clickedUnit) {
-        gameManager.setSelectedViewUnit(clickedUnit);
-        mainGUI.updateSidebarStats(clickedUnit);
-        mainGUI.getBottomBar().updateBottomBarSkills(clickedUnit);
+        gui.getGameManager().setSelectedViewUnit(clickedUnit);
+        gui.updateSidebarStats(clickedUnit);
+        gui.getBottomBar().updateBottomBarSkills(clickedUnit);
     }
 }
