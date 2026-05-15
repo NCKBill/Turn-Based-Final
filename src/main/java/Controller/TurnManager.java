@@ -1,6 +1,6 @@
 package Controller;
 
-import Unit.*;
+import Unit.Unit;
 
 import java.util.*;
 
@@ -51,14 +51,10 @@ public class TurnManager {
     }
 
     public void startNextTurn() {
-        activeUnit = getNextUnit();
-
-        if (activeUnit == null) {
-            if (!allActiveUnits.isEmpty()) {
-                if (!endGame) {
-                    calculateTurnOrder(this.allActiveUnits);
-                    startNextTurn();
-                }
+        while (activeUnit == null && !allActiveUnits.isEmpty() && !endGame) {
+            activeUnit = getNextUnit();
+            if (activeUnit == null) {
+                calculateTurnOrder(this.allActiveUnits);
             }
         }
     }
