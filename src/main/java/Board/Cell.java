@@ -44,14 +44,6 @@ public class Cell {
         return col;
     }
 
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    public void setCol(int col) {
-        this.col = col;
-    }
-
     public String getTerrainType() {
         return terrainType;
     }

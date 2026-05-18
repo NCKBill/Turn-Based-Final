@@ -8,12 +8,12 @@ import Unit.Unit;
  */
 
 public abstract class Action {
-    private String type; // Buff | Damage
-    private String name;
-    private int apCost; // apCost out of 6
-    private int value; // default damage/heal before modifier
-    private int range;
-    private boolean targetFriendly; // can target friendly or not
+    private final String type; // Buff | Damage
+    private final String name;
+    private final int apCost; // apCost out of 6
+    private final int value; // default damage/heal before modifier
+    private final int range;
+    private final boolean targetFriendly; // can target friendly or not
 
     public Action(String type, String name, int apCost, int value, int range, boolean targetFriendly) {
         this.type = type;
@@ -72,44 +72,17 @@ public abstract class Action {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public int getApCost() {
         return apCost;
-    }
-
-    public void setApCost(int apCost) {
-        this.apCost = apCost;
     }
 
     public int getValue() {
         return value;
     }
 
-    public void setValue(int value) {
-        this.value = value;
-    }
-
-    public int getRange() {
-        return range;
-    }
-
-    public void setRange(int range) {
-        this.range = range;
-    }
-
-    public void setTargetFriendly(boolean targetFriendly) {
-        this.targetFriendly = targetFriendly;
-    }
 
     public String getType() {
         return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public boolean isTargetFriendly() {
