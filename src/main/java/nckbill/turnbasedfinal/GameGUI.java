@@ -36,6 +36,9 @@ public class GameGUI extends Application {
     public static int row = 10;
     public static int column = 10;
 
+    public static void main(String[] args) {
+        launch(args);
+    }
     @Override
     public void start(Stage primaryStage) {
         rootLayout = new BorderPane();
