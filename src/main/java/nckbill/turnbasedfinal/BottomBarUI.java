@@ -7,40 +7,38 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 
 public class BottomBarUI extends HBox {
-    private GameManager gameManager;
+    private final GameManager gameManager;
+    private final GameGUI gui;
 
-    public BottomBarUI(GameManager gameManager) {
-        this.gameManager = gameManager;
+    public BottomBarUI(GameGUI gui) {
+        this.gui = gui;
+        this.gameManager = gui.getGameManager();
         this.setSpacing(20);
         this.setStyle("-fx-background-color: #c0c0c0; -fx-padding: 10px;");
-    }
-
-    public void setGameManager(GameManager gameManager) {
-        this.gameManager = gameManager;
-        initializeDefault();
     }
 
     public void initializeDefault() {
         this.getChildren().clear();
         Button endTurnButton = new Button("End Turn");
+        Button restartButton = new Button("Restart");
+
         endTurnButton.setOnAction(e -> {
             if (gameManager != null) {
                 gameManager.endPlayerTurn();
             }
         });
+
+        restartButton.setOnAction(e -> {
+            if (gui != null) {
+                gui.restartGame();
+            }
+        });
         this.getChildren().add(endTurnButton);
+        this.getChildren().add(restartButton);
     }
 
     public void updateBottomBarSkills(Unit selectedUnit) {
-        this.getChildren().clear();
-
-        Button endTurnButton = new Button("End Turn");
-        endTurnButton.setOnAction(e -> {
-            if (gameManager != null) {
-                gameManager.endPlayerTurn();
-            }
-        });
-        this.getChildren().add(endTurnButton);
+        initializeDefault();
 
         if (selectedUnit != null && selectedUnit.getAvailableActions() != null) {
             Unit activeUnit = gameManager.getTurnManager().getActiveUnit();

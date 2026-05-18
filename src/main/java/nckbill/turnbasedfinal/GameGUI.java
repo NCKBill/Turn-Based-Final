@@ -1,9 +1,11 @@
 package nckbill.turnbasedfinal;
 
-import Board.*;
-import Unit.*;
-import Controller.*;
-
+import Board.Cell;
+import Controller.GameManager;
+import Controller.PlayerController;
+import Unit.Unit;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Node;
@@ -11,10 +13,9 @@ import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import javafx.animation.*;
 import javafx.util.Duration;
 
-import java.util.*;
+import java.util.List;
 
 public class GameGUI extends Application {
     private BorderPane rootLayout;
@@ -24,6 +25,7 @@ public class GameGUI extends Application {
     private TopBarUI topBar;
     private BottomBarUI bottomBar;
     private SideBarUI sideBar;
+    private CellUI[][] grid;
 
     private GameManager gameManager;
 
@@ -39,8 +41,8 @@ public class GameGUI extends Application {
         rootLayout = new BorderPane();
         gameManager = new GameManager(this, row, column);
         // initialize all boxes (visual on screen)
-        topBar = new TopBarUI(this, gameManager);
-        bottomBar = new BottomBarUI(gameManager);
+        topBar = new TopBarUI(this);
+        bottomBar = new BottomBarUI(this);
         sideBar = new SideBarUI();
 
         startUI = new StartUI(this);
@@ -73,13 +75,14 @@ public class GameGUI extends Application {
         });
     }
 
-    // method to initialize grid
+    // Method to initialize grid
     private void initializeGrid() {
         interactiveGrid = new GridPane();
         interactiveGrid.setStyle("-fx-background-color: #ffffff; -fx-alignment: center;");
 
         int rows = gameManager.getBackendGrid().getRows();
         int cols = gameManager.getBackendGrid().getColumns();
+        grid = new CellUI[rows][cols];
 
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -87,13 +90,14 @@ public class GameGUI extends Application {
                 int finalCol = c;
 
                 CellUI visualCell = new CellUI(finalRow, finalCol, sideBar.getSidebarStatsLabel(), this);
-
+                grid[r][c] = visualCell;
                 Cell currentCell = gameManager.getBackendGrid().getCell(finalRow, finalCol);
                 if (currentCell != null && currentCell.getUnit() != null) {
                     visualCell.setUnit(currentCell.getUnit());
                 }
 
                 visualCell.setOnMouseClicked(e -> gameManager.handleCellClick(finalRow, finalCol));
+
                 interactiveGrid.add(visualCell, c, r);
             }
         }
@@ -113,8 +117,7 @@ public class GameGUI extends Application {
 
     public void refreshVisualGrid() {
         for (Node node : interactiveGrid.getChildren()) {
-            if (node instanceof CellUI) {
-                CellUI visualCell = (CellUI) node;
+            if (node instanceof CellUI visualCell) {
                 Cell currentCell = gameManager.getBackendGrid().getCell(visualCell.getRow(), visualCell.getCol());
                 visualCell.setUnit(currentCell != null ? currentCell.getUnit() : null);
             }
@@ -137,8 +140,7 @@ public class GameGUI extends Application {
                     for (int i = 0; i < moveLimit; i++) {
                         Cell step = fullPath.get(i);
                         for (Node node : interactiveGrid.getChildren()) {
-                            if (node instanceof CellUI) {
-                                CellUI cellUI = (CellUI) node;
+                            if (node instanceof CellUI cellUI) {
                                 if (cellUI.getRow() == step.getRow() && cellUI.getCol() == step.getCol()) {
                                     cellUI.setPathHighlight(true);
                                 }
@@ -161,31 +163,33 @@ public class GameGUI extends Application {
     public void executeMovement(Unit currentUnit, List<Cell> path, Runnable onCompleted) {
         interactiveGrid.setDisable(true);
         Timeline timeline = new Timeline();
-        int delay = 300; // 300ms every step
+        int delay = 300;
 
-        for (int i = 0; i < path.size(); i++) {
-            Cell step = path.get(i);
-
+        for (Cell step : path) {
             if (step.getUnit() == currentUnit) continue;
-            KeyFrame keyFrame = new KeyFrame(Duration.millis(delay), event -> {
-                Cell currentCell = gameManager.getBackendGrid().getCell(currentUnit);
-                if (currentCell != null) currentCell.setUnit(null);
 
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(delay), event -> {
+                Cell oldCell = gameManager.getBackendGrid().getCell(currentUnit);
+                int oldR = oldCell.getRow();
+                int oldC = oldCell.getCol();
+
+                oldCell.setUnit(null);
                 step.setUnit(currentUnit);
                 currentUnit.setMovementPoint(currentUnit.getMovementPoint() - 1);
 
-                refreshVisualGrid();
-                updateSidebarStats(currentUnit); // Update stats to reflect remaining MP
+                updateVisualCell(oldR, oldC);
+                updateVisualCell(step.getRow(), step.getCol());
+
+                updateSidebarStats(currentUnit);
             });
 
             timeline.getKeyFrames().add(keyFrame);
             delay += 300;
         }
+
         timeline.setOnFinished(event -> {
             System.out.println(currentUnit.getName() + " finished moving.");
             interactiveGrid.setDisable(false);
-
-            // Let the AI know it can attack now
             if (onCompleted != null) {
                 onCompleted.run();
             }
@@ -211,27 +215,32 @@ public class GameGUI extends Application {
         });
     }
 
-    public GameManager getGameManager() {
-        return gameManager;
+    public void restartGame() {
+        Platform.runLater(() -> {
+            interactiveGrid.setDisable(true);
+
+            returnToMainMenu();
+            gameManager.resetGame();
+        });
     }
 
-    public void setGameManager(GameManager gameManager) {
-        this.gameManager = gameManager;
+    private void updateVisualCell(int row, int col) {
+        if (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
+            CellUI visualCell = grid[row][col];
+            Cell backendCell = gameManager.getBackendGrid().getCell(row, col);
+            visualCell.setUnit(backendCell != null ? backendCell.getUnit() : null);
+        }
+    }
+
+    public GameManager getGameManager() {
+        return gameManager;
     }
 
     public BorderPane getRootLayout() {
         return rootLayout;
     }
 
-    public void setRootLayout(BorderPane rootLayout) {
-        this.rootLayout = rootLayout;
-    }
-
     public GridPane getInteractiveGrid() {
         return interactiveGrid;
-    }
-
-    public void setInteractiveGrid(GridPane interactiveGrid) {
-        this.interactiveGrid = interactiveGrid;
     }
 }
