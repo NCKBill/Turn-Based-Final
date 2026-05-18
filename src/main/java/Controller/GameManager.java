@@ -1,19 +1,24 @@
 package Controller;
 
+import Action.Action;
 import Board.Cell;
 import Board.Grid;
 import Unit.Unit;
-import Action.*;
-import nckbill.turnbasedfinal.*;
+import nckbill.turnbasedfinal.GameGUI;
 
 import java.util.List;
 
+/**
+ * This class handle:
+ * Starting & ending game
+ * Processing and ending turns
+ * Handling player's click on cells
+ * Handle damage & death
+ */
 public class GameManager {
-    public int enemyCount = 1;
-    public int allyCount = 1;
     private Grid backendGrid;
     private TurnManager turnManager;
-    private GameGUI gui;
+    private final GameGUI gui;
 
     private Action selectedAction;
     private Unit selectedViewUnit;
@@ -30,8 +35,8 @@ public class GameManager {
         allyCountCurrent = 0;
         enemiesCountCurrent = 0;
 
-        for (int i = 0; i < allActiveUnits.size(); i++) {
-            if (allActiveUnits.get(i).isFriendly())
+        for (Unit allActiveUnit : allActiveUnits) {
+            if (allActiveUnit.isFriendly())
                 allyCountCurrent++;
             else
                 enemiesCountCurrent++;
@@ -45,18 +50,20 @@ public class GameManager {
      * Take turn for AI units and Player units
      */
     public void processNextTurn() {
-        Unit activeUnit = turnManager.getActiveUnit();
-        if (activeUnit == null) {
-            turnManager.startNextTurn();
-            activeUnit = turnManager.getActiveUnit();
-        }
+        javafx.application.Platform.runLater(() -> {
+            Unit activeUnit = turnManager.getActiveUnit();
+            if (activeUnit == null) {
+                turnManager.startNextTurn();
+                activeUnit = turnManager.getActiveUnit();
+            }
 
-        // Tell GUI to update the turn display
-        gui.updateTurnDisplay(activeUnit);
+            // Tell GUI to update the turn display
+            gui.updateTurnDisplay(activeUnit);
 
-        if (activeUnit != null) {
-            activeUnit.performAction();
-        }
+            if (activeUnit != null) {
+                activeUnit.performAction();
+            }
+        });
     }
 
     public void executeMovement(Unit movingUnit, List<Cell> path, Runnable onComplete) {
@@ -90,7 +97,7 @@ public class GameManager {
         gui.updateTurnDisplay(unit);
     }
 
-    // Call this whenever damage is applied
+    // Call when damage is applied
     public void handleDamage(Unit target, int damage) {
         target.setHealthPoint(target.getHealthPoint() - damage);
         // Check for Death

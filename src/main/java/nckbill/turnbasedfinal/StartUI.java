@@ -11,20 +11,74 @@ import javafx.scene.text.Font;
 import java.util.List;
 
 public class StartUI extends VBox {
-    private final Button startButton;
-    private final Button startButtonAI;
+    private Button startButton;
+    private Button startButtonAI;
     private String selectedClass = "Tank"; // Default choice
+    private final GameGUI gui;
 
-    public StartUI(GameGUI gameGUI) {
+    public StartUI(GameGUI gui) {
+        this.gui = gui;
         this.setAlignment(Pos.CENTER);
         this.setSpacing(30);
         this.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
 
-        Label title = new Label("Select Your Hero");
+        Label title = new Label("Select Your Character");
         title.setFont(new Font("Arial", 40));
         title.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
 
         // Character Selection Row
+        HBox selectionBox = createSelectionBox();
+
+        initializeButtons();
+
+        this.getChildren().addAll(title, selectionBox, startButton, startButtonAI);
+    }
+
+    // Initialize buttons
+    private void initializeButtons() {
+        this.startButton = new Button("Enter Game");
+        this.startButton.setPrefSize(150, 20);
+        this.startButton.setStyle("-fx-font-size: 18px; -fx-base: #2ecc71; -fx-text-fill: white;");
+
+        this.startButtonAI = new Button("Enter AI-only Game");
+        this.startButtonAI.setPrefSize(200, 20);
+        this.startButtonAI.setStyle("-fx-font-size: 18px; -fx-base: #2ecc71; -fx-text-fill: white;");
+
+        // start game with player chosen unit, and 3 others
+        // enemy team is random
+        this.getStartButton().setOnAction(event -> {
+            String choice = this.getSelectedClass();
+            transitionToGame();
+
+            UnitGenerator unitGenerator = new UnitGenerator();
+            List<Unit> units = unitGenerator.generate(gui.getGameManager(), choice);
+
+            startGame(units);
+        });
+        // start game with 4 random units
+        this.getStartButtonAI().setOnAction(e -> {
+            transitionToGame();
+
+            UnitGenerator unitGenerator = new UnitGenerator();
+            List<Unit> units = unitGenerator.setupAI(gui.getGameManager());
+
+            startGame(units);
+        });
+    }
+
+    private void startGame(List<Unit> units) {
+        gui.refreshVisualGrid();
+        gui.getGameManager().startGame(units);
+    }
+
+    private void transitionToGame() {
+        gui.getRootLayout().setCenter(gui.getInteractiveGrid());
+        gui.showGameGUI();
+    }
+
+    // Create selection boxes (button) to choose 1 of 4 classes:
+    // Tank, Mage, Healer, Rogue
+    private HBox createSelectionBox() {
         HBox selectionBox = new HBox(15);
         selectionBox.setAlignment(Pos.CENTER);
 
@@ -39,38 +93,8 @@ public class StartUI extends VBox {
             selectionBox.getChildren().add(classBtn);
         }
 
-        this.startButton = new Button("Enter Game");
-        this.startButton.setPrefSize(200, 40);
-        this.startButton.setStyle("-fx-font-size: 18px; -fx-base: #2ecc71; -fx-text-fill: white;");
-
-        this.startButtonAI = new Button("Enter AI only Game");
-        this.startButtonAI.setPrefSize(400, 40);
-        this.startButtonAI.setStyle("-fx-font-size: 18px; -fx-base: #2ecc71; -fx-text-fill: white;");
-
-        this.getChildren().addAll(title, selectionBox, startButton, startButtonAI);
-
-        this.getStartButton().setOnAction(event -> {
-            String choice = this.getSelectedClass();
-            gameGUI.getRootLayout().setCenter(gameGUI.getInteractiveGrid()); // Switch to game board
-            gameGUI.showGameGUI();
-            UnitGenerator unitGenerator = new UnitGenerator();
-            // Use the new custom match setup
-            List<Unit> units = unitGenerator.generate(gameGUI.getGameManager(), choice);
-
-            gameGUI.refreshVisualGrid();
-            gameGUI.getGameManager().startGame(units);
-        });
-
-        this.getStartButtonAI().setOnAction(e -> {
-            gameGUI.getRootLayout().setCenter(gameGUI.getInteractiveGrid());
-            gameGUI.showGameGUI();
-            UnitGenerator unitGenerator = new UnitGenerator();
-            List<Unit> units = unitGenerator.setup(gameGUI.getGameManager());
-            gameGUI.refreshVisualGrid();
-            gameGUI.getGameManager().startGame(units);
-        });
+        return selectionBox;
     }
-
     public String getSelectedClass() {
         return selectedClass;
     }

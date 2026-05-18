@@ -5,13 +5,13 @@ import Unit.Unit;
 import java.util.*;
 
 public class TurnManager {
-    private Queue<UnitWrap> movementQueue;
-    private Random dice;
+    private final Queue<UnitWrap> movementQueue;
+    private final Random dice;
     private Unit activeUnit;
     private List<Unit> allActiveUnits;
     public boolean endGame = false;
     public TurnManager() {
-        this.movementQueue = new PriorityQueue<>((a, b) -> b.getRoll() - a.getRoll());
+        this.movementQueue = new PriorityQueue<>((a, b) -> b.roll() - a.roll());
         this.dice = new Random();
         this.allActiveUnits = new ArrayList<>();
     }
@@ -33,8 +33,8 @@ public class TurnManager {
         System.out.println("Initiation roll: ");
         while (!queue.isEmpty()) {
             UnitWrap unitWrap = queue.poll();
-            Unit currentUnit = unitWrap.getUnit();
-            int roll = unitWrap.getRoll();
+            Unit currentUnit = unitWrap.unit();
+            int roll = unitWrap.roll();
             System.out.print(currentUnit.getName() + ": " + roll);
             if (!queue.isEmpty())
                 System.out.print(" -> ");
@@ -45,7 +45,7 @@ public class TurnManager {
 
     public Unit getNextUnit() {
         if (!movementQueue.isEmpty()) {
-            return movementQueue.poll().getUnit();
+            return movementQueue.poll().unit();
         }
         return null;
     }
@@ -73,12 +73,12 @@ public class TurnManager {
 
     public Queue<Unit> getTurnQueue() {
         Queue<Unit> arr = new LinkedList<>();
-        for (UnitWrap uw : movementQueue) arr.offer(uw.getUnit());
+        for (UnitWrap uw : movementQueue) arr.offer(uw.unit());
         return arr;
     }
 
     public void removeUnit(Unit unit) {
-        movementQueue.removeIf(unitWrap -> unitWrap.getUnit() == unit);
+        movementQueue.removeIf(unitWrap -> unitWrap.unit() == unit);
         allActiveUnits.remove(unit);
         System.out.println(unit.getName() + " removed.");
     }
@@ -87,25 +87,6 @@ public class TurnManager {
         return allActiveUnits;
     }
 
-    public void setAllActiveUnits(List<Unit> allActiveUnits) {
-        this.allActiveUnits = allActiveUnits;
-    }
-
-    private class UnitWrap {
-        private Unit unit;
-        private int roll;
-
-        UnitWrap(Unit unit, int roll) {
-            this.unit = unit;
-            this.roll = roll;
-        }
-
-        public Unit getUnit() {
-            return unit;
-        }
-
-        public int getRoll() {
-            return roll;
-        }
+    private record UnitWrap(Unit unit, int roll) {
     }
 }

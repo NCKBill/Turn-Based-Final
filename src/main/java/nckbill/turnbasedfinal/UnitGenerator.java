@@ -1,12 +1,19 @@
 package nckbill.turnbasedfinal;
 
-import Board.*;
-import Controller.*;
+import Board.Cell;
+import Board.Grid;
+import Controller.AIController;
+import Controller.Controller;
+import Controller.GameManager;
+import Controller.PlayerController;
 import Unit.*;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class UnitGenerator {
-    private Random rand = new Random();
+    private final Random rand = new Random();
     public int allyCount;
     public int enemyCount;
 
@@ -19,20 +26,22 @@ public class UnitGenerator {
         this.allyCount = 4;
         this.enemyCount = 4;
     }
-    public List<Unit> setup(GameManager gm) {
+
+    // Spawns 2 teams controlled by AI
+    // Called when user choose AI-only mode
+    public List<Unit> setupAI(GameManager gm) {
         List<Unit> allUnits = new ArrayList<>();
-        Grid grid = gm.getBackendGrid();
+
         // Spawn ally AI units
         for (int i = 0; i < allyCount; i++) {
-            Controller controller = new PlayerController(gm);
-            Unit ally = getRandomUnit(true, null, gm);
+            Unit ally = getRandomUnit(true, gm);
             if (spawnUnitRandom(ally, gm)) {
                 allUnits.add(ally);
             }
         }
         // Spawn enemy AI units
         for (int i = 0; i < enemyCount; i++) {
-            Unit enemy = getRandomUnit(false, null, gm); // Controller assigned in getRandomUnit
+            Unit enemy = getRandomUnit(false, gm); // Controller assigned in getRandomUnit
             if (spawnUnitRandom(enemy, gm)) {
                 allUnits.add(enemy);
             }
@@ -41,29 +50,18 @@ public class UnitGenerator {
         return allUnits;
     }
 
-    private Unit getRandomUnit(boolean isFriendly, Controller forcedController, GameManager gm) {
-        int type = rand.nextInt(4);
-        Controller aiRanged = new AIController(gm, "ranged");
-        Controller aiTank = new AIController(gm, "tank");
-
-        return switch (type) {
-            case 0 -> new Mage(isFriendly, forcedController != null ? forcedController : aiRanged);
-            case 1 -> new Rogue(isFriendly, forcedController != null ? forcedController : aiTank);
-            default -> new Tank(isFriendly, forcedController != null ? forcedController : aiTank);
-        };
-    }
-
+    // Spawn a unit in a random, valid location on the grid
     private boolean spawnUnitRandom(Unit unit, GameManager gm) {
         Grid grid = gm.getBackendGrid();
         int rows = grid.getRows();
         int cols = grid.getColumns();
         int attempts = 0;
 
-        while (attempts < 50) {
+        while (attempts < (rows + cols) / 2) {
             int r, c;
 
             if (unit.isFriendly()) {
-                r = rand.nextInt(rows / 2 + 1, rows);
+                r = rand.nextInt((int) (((double) rows / 2) * 1.3), rows);
             } else {
                 r = rand.nextInt(0, (int)(rows * 0.3));
             }
@@ -100,7 +98,7 @@ public class UnitGenerator {
                 case "Mage" -> ally = new Mage(true, controller);
                 case "Rogue" -> ally = new Rogue(true, controller);
                 default -> ally = new Tank(true, controller);
-            };
+            }
 
             if (spawnUnitRandom(ally, gameManager)) {
                 allUnits.add(ally);
@@ -108,7 +106,7 @@ public class UnitGenerator {
         }
 
         for (int i = 0; i < 4; i++) {
-            Unit enemy = getRandomUnit(false, null, gameManager);
+            Unit enemy = getRandomUnit(false, gameManager);
             if (spawnUnitRandom(enemy, gameManager)) {
                 allUnits.add(enemy);
             }
@@ -120,4 +118,15 @@ public class UnitGenerator {
         return (className.equals("Mage") || className.equals("Healer")) ? "ranged" : "tank";
     }
 
+    private Unit getRandomUnit(boolean isFriendly, GameManager gm) {
+        int type = rand.nextInt(4);
+        Controller aiRanged = new AIController(gm, "ranged");
+        Controller aiTank = new AIController(gm, "tank");
+
+        return switch (type) {
+            case 0 -> new Mage(isFriendly, aiRanged);
+            case 1 -> new Rogue(isFriendly, aiTank);
+            default -> new Tank(isFriendly, aiTank);
+        };
+    }
 }

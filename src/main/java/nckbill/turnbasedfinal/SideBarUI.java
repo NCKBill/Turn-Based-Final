@@ -5,7 +5,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 public class SideBarUI extends VBox {
-    private Label sidebarStatsLabel;
+    private final Label sidebarStatsLabel;
 
     public SideBarUI() {
         // VBox styling and spacing
@@ -25,7 +25,6 @@ public class SideBarUI extends VBox {
     public void updateSidebarStats(Unit unit) {
         if (unit != null) {
             sidebarStatsLabel.setText(unit.toString());
-        } else {
         }
     }
 

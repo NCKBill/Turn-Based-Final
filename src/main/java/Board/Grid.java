@@ -5,10 +5,10 @@ import Unit.Unit;
 import java.util.*;
 
 public class Grid {
-    private Cell[][] grid;
-    private int rows;
-    private int columns;
-    private int[][] direction = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    private final Cell[][] grid;
+    private final int rows;
+    private final int columns;
+    private final int[][] direction = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
     public Grid(int rows, int columns) {
         this.rows = rows;
@@ -49,7 +49,7 @@ public class Grid {
     }
 
     // Wrapper class
-    private class PathNode implements Comparable<PathNode> {
+    private static class PathNode implements Comparable<PathNode> {
         Cell cell;
         int cost;
         PathNode parent;
@@ -130,34 +130,12 @@ public class Grid {
         return path;
     }
 
-    public Cell[][] getGrid() {
-        return grid;
-    }
-
     public int getRows() {
         return rows;
     }
 
     public int getColumns() {
         return columns;
-    }
-
-    // for test printing grid
-    public void display() {
-        for (int x = 0; x < columns; x++) {
-            for (int y = 0; y < rows; y++) {
-                String occupant = "";
-                if (grid[x][y].isOccupied()) {
-                    if (grid[x][y].getUnit().isFriendly()) {
-                        occupant = "O";
-                    } else {
-                        occupant = "X";
-                    }
-                }
-                System.out.print("[" + occupant + "]" + " ");
-            }
-            System.out.println();
-        }
     }
 
     /**
