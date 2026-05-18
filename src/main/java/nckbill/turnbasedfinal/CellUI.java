@@ -31,8 +31,9 @@ public class CellUI extends StackPane {
         background.setMouseTransparent(true);
 
         unitIcon = new Label("");
-        unitIcon.setStyle("-fx-font-weight: bold; -fx-font-size: 20px;");
+        unitIcon.setStyle("-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: black;");
         unitIcon.setMouseTransparent(true);
+        unitIcon.setVisible(true);
 
         this.getChildren().addAll(background, unitIcon);
         setupHoverEvents();

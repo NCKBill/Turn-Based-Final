@@ -43,6 +43,7 @@ public class GameManager {
         }
         turnManager.calculateTurnOrder(allActiveUnits);
         turnManager.startNextTurn();
+        gui.refreshVisualGrid();
         processNextTurn();
     }
 

@@ -72,8 +72,11 @@ public class TurnManager {
     }
 
     public Queue<Unit> getTurnQueue() {
+        Queue<UnitWrap> tempQueue = new PriorityQueue<>(movementQueue);
         Queue<Unit> arr = new LinkedList<>();
-        for (UnitWrap uw : movementQueue) arr.offer(uw.unit());
+        while (!tempQueue.isEmpty()) {
+            arr.offer(tempQueue.poll().unit());
+        }
         return arr;
     }
 

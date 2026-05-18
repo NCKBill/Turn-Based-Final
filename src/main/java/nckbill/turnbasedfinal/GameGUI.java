@@ -62,6 +62,7 @@ public class GameGUI extends Application {
         rootLayout.setTop(topBar);
         rootLayout.setBottom(bottomBar);
         rootLayout.setRight(sideBar);
+        rootLayout.setCenter(interactiveGrid);
     }
     public void hideGameGUI() {
         rootLayout.setTop(null);
