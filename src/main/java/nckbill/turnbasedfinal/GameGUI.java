@@ -256,6 +256,10 @@ public class GameGUI extends Application {
     }
 
     public void logMessage(String message) {
+        if (message == null || message.trim().isEmpty()) {
+            return;
+        }
+
         if (sideBarUI != null) {
             sideBarUI.addLogMessage(message);
         } else {
