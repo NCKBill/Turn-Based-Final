@@ -48,7 +48,7 @@ public class TopBarUI extends HBox {
             }
 
             gui.getGameManager().setSelectedViewUnit(active);
-            gui.updateSidebarStats(active);
+            gui.updateSidebarUnitStats(active);
             gui.getBottomBar().updateBottomBarSkills(active);
         } else {
             queueDisplayContainer.getChildren().add(new Label("Calculating next round..."));
@@ -60,7 +60,7 @@ public class TopBarUI extends HBox {
 
     private void handleTopBarUnitClick(Unit clickedUnit) {
         gui.getGameManager().setSelectedViewUnit(clickedUnit);
-        gui.updateSidebarStats(clickedUnit);
+        gui.updateSidebarUnitStats(clickedUnit);
         gui.getBottomBar().updateBottomBarSkills(clickedUnit);
     }
 }
