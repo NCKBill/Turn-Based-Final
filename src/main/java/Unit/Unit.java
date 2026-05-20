@@ -23,6 +23,12 @@ public abstract class Unit {
     private Controller unitController;
     private List<Action> availableActions; // List to hold skills/actions
 
+    public String getImagePath() {
+        String path = "/assets/units/" + this.getClass().getSimpleName() + ".png";
+        System.out.println("Path for image is: " + path);
+        return path;
+    }
+
     public Unit(String name, int healthPoint, int strength, int power, int defense, int defenseMagic, int initiation, boolean friendly, Controller unitController) {
         String temp = " Ally";
         if (!friendly)

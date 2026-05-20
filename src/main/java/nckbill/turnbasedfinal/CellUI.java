@@ -1,8 +1,11 @@
 package nckbill.turnbasedfinal;
 
-import Unit.*;
-import javafx.scene.layout.StackPane;
+import Unit.ImageCache;
+import Unit.Unit;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -18,24 +21,39 @@ public class CellUI extends StackPane {
     private boolean isReachable = false;
     private GameGUI gui;
 
-    // Constructor updated to receive GameGUI
+    private ImageView unitImageView;
+    private static final int CELL_SIZE = 50;
+
+
     public CellUI(int row, int col, Label sideStatsLabel, GameGUI gui) {
         this.row = row;
         this.col = col;
         this.sideStatsLabel = sideStatsLabel;
         this.gui = gui;
 
-        background = new Rectangle(50, 50);
+        this.setPrefSize(CELL_SIZE, CELL_SIZE);
+
+        // Setup Background Shape
+        background = new Rectangle(CELL_SIZE, CELL_SIZE);
         background.setFill(Color.LIGHTGRAY);
         background.setStroke(Color.BLACK);
         background.setMouseTransparent(true);
 
+        // Set up the Old Text Icon
         unitIcon = new Label("");
         unitIcon.setStyle("-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: black;");
         unitIcon.setMouseTransparent(true);
-        unitIcon.setVisible(true);
 
-        this.getChildren().addAll(background, unitIcon);
+        // Set up Image View
+        unitImageView = new ImageView();
+        unitImageView.setFitWidth(CELL_SIZE - 4);
+        unitImageView.setFitHeight(CELL_SIZE - 4);
+        unitImageView.setPreserveRatio(true);
+        unitImageView.setMouseTransparent(true); // Let StackPane handle clicks/hovers
+
+        // Add to StackPane
+        this.getChildren().addAll(background, unitIcon, unitImageView);
+
         setupHoverEvents();
     }
 
@@ -44,14 +62,29 @@ public class CellUI extends StackPane {
 
         if (unit != null) {
             boolean isFriendly = unit.isFriendly();
-            unitIcon.setText(unit.getName().substring(0, 1));
 
+            // Set cell team color
             if (isFriendly)
                 background.setFill(Color.LIGHTBLUE);
             else
                 background.setFill(Color.LIGHTCORAL);
+
+            // Fetch and set the image!
+            String imagePath = unit.getImagePath();
+            try {
+                Image unitImage = ImageCache.getImage(imagePath);
+                this.unitImageView.setImage(unitImage);
+                this.unitIcon.setText(""); // Hide the text letter since we have an image
+            } catch (Exception e) {
+                // Fallback: If image fails to load, use the first letter of the name
+                System.err.println("Could not load image: " + imagePath);
+                this.unitIcon.setText(unit.getName().substring(0, 1));
+            }
+
         } else {
+            // Empty Cell: Clear both text and image
             unitIcon.setText("");
+            this.unitImageView.setImage(null);
             background.setFill(Color.LIGHTGRAY);
         }
     }
