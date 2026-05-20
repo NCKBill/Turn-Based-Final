@@ -9,35 +9,42 @@ import javafx.scene.layout.HBox;
 public class BottomBarUI extends HBox {
     private final GameManager gameManager;
     private final GameGUI gui;
+    private Button restartButton;
 
     public BottomBarUI(GameGUI gui) {
         this.gui = gui;
         this.gameManager = gui.getGameManager();
         this.setSpacing(20);
         this.setStyle("-fx-background-color: #c0c0c0; -fx-padding: 10px;");
+        restartButton = new Button("Return to Main Menu");
+        restartButton.setOnAction(e -> {
+            gui.restartGame();
+        });
+
     }
 
     public void initializeDefault() {
         this.getChildren().clear();
         Button endTurnButton = new Button("End Turn");
-        Button restartButton = new Button("Restart");
 
+        boolean isPlayerTurn = false;
+        Unit unit = gameManager.getTurnManager().getActiveUnit();
+        if (unit != null && unit.getUnitController().getClass().getSimpleName().equals("AIController"))
+            endTurnButton.setDisable(true);
+
+        endTurnButton.setDisable(!isPlayerTurn);
         endTurnButton.setOnAction(e -> {
-            if (gameManager != null) {
-                gameManager.endPlayerTurn();
-            }
+            gameManager.endPlayerTurn();
         });
 
-        restartButton.setOnAction(e -> {
-            if (gui != null) {
-                gui.restartGame();
-            }
-        });
-        this.getChildren().add(endTurnButton);
         this.getChildren().add(restartButton);
+        this.getChildren().add(endTurnButton);
     }
 
     public void updateBottomBarSkills(Unit selectedUnit) {
+        if (gameManager != null && gameManager.isMatchOver()) {
+            return;
+        }
         initializeDefault();
 
         if (selectedUnit != null && selectedUnit.getAvailableActions() != null) {

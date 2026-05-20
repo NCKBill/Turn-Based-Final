@@ -27,7 +27,6 @@ public abstract class Unit {
         String friendly = isFriendly() ? "ally" : "enemy";
         String unitName = this.getClass().getSimpleName().toLowerCase();
         String path = "/assets/units/" + friendly + "-" + unitName + ".png";
-        System.out.println("Path for image is: " + path);
         return path;
     }
 

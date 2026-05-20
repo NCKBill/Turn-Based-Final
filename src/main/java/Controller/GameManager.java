@@ -51,6 +51,9 @@ public class GameManager {
      * Take turn for AI units and Player units
      */
     public void processNextTurn() {
+        if (turnManager.endGame) {
+            return;
+        }
         javafx.application.Platform.runLater(() -> {
             Unit activeUnit = turnManager.getActiveUnit();
             if (activeUnit == null) {
@@ -119,6 +122,9 @@ public class GameManager {
         }
     }
 
+    public boolean isMatchOver() {
+        return turnManager.endGame;
+    }
     private void handleEnd(String message) {
         System.out.println(message);
         gui.showGameOver(message);

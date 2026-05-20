@@ -212,10 +212,10 @@ public class GameGUI extends Application {
 
             alert.showAndWait();
 
-            interactiveGrid.setDisable(true);
-
-            returnToMainMenu();
-            gameManager.resetGame();
+//            interactiveGrid.setDisable(true);
+//
+//            returnToMainMenu();
+//            gameManager.resetGame();
         });
     }
 
