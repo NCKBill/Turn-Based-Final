@@ -23,8 +23,8 @@ public class TurnManager {
         this.allActiveUnits = allActiveUnits;
         movementQueue.clear();
         for (Unit unit : allActiveUnits) {
-            unit.setMovementPoint(unit.getMaxMP()); // Restores movement points
-            unit.setActionPoint(unit.getMaxAP());   // Restores action points
+            unit.setMP(unit.getMaxMP()); // Restores movement points
+            unit.setAP(unit.getMaxAP());   // Restores action points
 
             int initRoll = unit.getInitiation() > 0 ? dice.nextInt(unit.getInitiation()) : 0;
             int roll = (dice.nextInt(10) + 1) + initRoll;
@@ -60,15 +60,11 @@ public class TurnManager {
                 calculateTurnOrder(this.allActiveUnits);
             }
         }
-
-        if (activeUnit != null) {
-            gm.getGUI().logMessage(activeUnit.getName() + "'s Turn Started");
-        }
     }
 
     public void endCurrentTurn() {
         if (activeUnit != null) {
-            activeUnit.setActionPoint(0);
+            activeUnit.setAP(0);
             activeUnit = null;
         }
         startNextTurn();

@@ -10,25 +10,25 @@ public class MagicAttack extends Action {
     }
 
     @Override
-    public int execute(Unit attacker, Cell targetCell) {
+    public int execute(Unit currentUnit, Cell targetCell) {
         Unit target = targetCell.getUnit();
         int damage = 0;
         if (target != null) {
-            if (!attacker.isTargetFriendly(target)) {
-                System.out.println(attacker.getName() + " casts " + this.getName() + " on " + target.getName());
+            if (!currentUnit.isTargetFriendly(target)) {
+                System.out.println(currentUnit.getName() + " casts " + this.getName() + " on " + target.getName());
 
                 // Damage = Default value + Power - Magic Defense
-                damage = this.getValue() + attacker.getPower() - target.getDefenseMagic();
+                damage = this.getValue() + currentUnit.getPower() - target.getDefenseMagic();
 
                 if (damage < 0) damage = 0;
-                this.setValueOfAction(damage);
+                this.setValueOnTarget(damage);
                 System.out.println(target.getName() + " was attacked for " + damage + " HP.");
             } else {
                 // Prevent player from accidentally attacking a friendly unit
                 System.out.println("Invalid target! " + this.getName() + " can only be cast on enemy units.");
             }
             // Deduct AP cost
-            attacker.setActionPoint(attacker.getActionPoint() - this.getApCost());
+            currentUnit.setAP(currentUnit.getAP() - this.getApCost());
         }
         return damage;
     }

@@ -8,9 +8,9 @@ import java.util.List;
 
 public abstract class Unit {
     private String name;
-    private int healthPoint;
-    private int actionPoint; // "energy" per turn
-    private int movementPoint; // cells the unit can move a turn
+    private int HP;
+    private int AP; // "energy" per turn
+    private int MP; // cells the unit can move a turn
     private int maxHP; // for resetting turn
     private int maxMP; // for resetting turn
     private int maxAP; // for resetting turn
@@ -26,18 +26,17 @@ public abstract class Unit {
     public String getImagePath() {
         String friendly = isFriendly() ? "ally" : "enemy";
         String unitName = this.getClass().getSimpleName().toLowerCase();
-        String path = "/assets/units/" + friendly + "-" + unitName + ".png";
-        return path;
+        return "/assets/units/" + friendly + "-" + unitName + ".png";
     }
 
-    public Unit(String name, int healthPoint, int strength, int power, int defense, int defenseMagic, int initiation, boolean friendly, Controller unitController) {
+    public Unit(String name, int HP, int strength, int power, int defense, int defenseMagic, int initiation, boolean friendly, Controller unitController) {
         String temp = " Ally";
         if (!friendly)
             temp = " Enemy";
         this.name = name + temp;
-        this.healthPoint = healthPoint;
-        this.actionPoint = 6;
-        this.movementPoint = 2;
+        this.HP = HP;
+        this.AP = 6;
+        this.MP = 2;
         this.strength = strength;
         this.power = power;
         this.defense = defense;
@@ -46,9 +45,9 @@ public abstract class Unit {
         this.friendly = friendly;
         this.unitController = unitController;
         this.availableActions = new ArrayList<>();
-        this.maxHP = healthPoint;
-        this.maxAP = actionPoint;
-        this.maxMP = movementPoint;
+        this.maxHP = HP;
+        this.maxAP = AP;
+        this.maxMP = MP;
     }
 
     // Triggers the turn logic via the assigned Controller
@@ -66,26 +65,42 @@ public abstract class Unit {
     }
     public List<Action> getAvailableActions() { return availableActions; }
 
-    public int getHealthPoint() { return healthPoint; }
-    public void setHealthPoint(int healthPoint) { this.healthPoint = healthPoint; }
+    public int getHP() {
+        return HP;
+    }
 
-    public int getActionPoint() { return actionPoint; }
-    public void setActionPoint(int actionPoint) { this.actionPoint = actionPoint; }
+    public void setHP(int HP) {
+        this.HP = HP;
+    }
+
+    public int getAP() {
+        return AP;
+    }
+
+    public void setAP(int AP) {
+        this.AP = AP;
+    }
     public boolean isExhausted () {
-        if (this.getActionPoint() <= 0) {
+        if (this.getAP() <= 0) {
             System.out.println("Unit is exhausted.");
             return true;
         }
 
         for (Action action: availableActions) {
-            if (action.getApCost() <= this.getActionPoint())
+            if (action.getApCost() <= this.getAP())
                 return false;
         }
         System.out.println("Unit is exhausted.");
         return true;
     }
-    public int getMovementPoint() { return movementPoint; }
-    public void setMovementPoint(int movementPoint) { this.movementPoint = movementPoint; }
+
+    public int getMP() {
+        return MP;
+    }
+
+    public void setMP(int MP) {
+        this.MP = MP;
+    }
 
     public int getInitiation() { return initiation; }
     public void setInitiation(int initiation) { this.initiation = initiation; }
@@ -174,9 +189,9 @@ public abstract class Unit {
     public String toString() {
         return
             "Name: " + name +
-            "\nHP: " + healthPoint +
-            "\nAP: " + actionPoint +
-            "\nMP: " + movementPoint +
+                    "\nHP: " + HP +
+                    "\nAP: " + AP +
+                    "\nMP: " + MP +
             "\nSTR: " + strength +
             "\nPOW: " + power +
             "\nDEF: " + defense +

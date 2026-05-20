@@ -20,14 +20,14 @@ public class PhysicalAttack extends Action {
                 // Damage = Strength - Defense
                 damage = this.getValue() + attacker.getStrength() - target.getDefense();
                 if (damage < 0) damage = 0;
-                this.setValueOfAction(damage);
+                this.setValueOnTarget(damage);
                 System.out.println(target.getName() + " was attacked for " + damage + " HP.");
             } else {
                 // Prevent player from accidentally attacking a friendly unit
                 System.out.println("Invalid target! " + this.getName() + " can only be cast on enemy units.");
             }
             // Deduct AP cost
-            attacker.setActionPoint(attacker.getActionPoint() - this.getApCost());
+            attacker.setAP(attacker.getAP() - this.getApCost());
         }
         return damage;
     }
