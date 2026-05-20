@@ -14,7 +14,7 @@ public abstract class Action {
     private final int value; // default damage/heal before modifier
     private final int range;
     private final boolean targetFriendly; // can target friendly or not
-    private int valueOfAction; // real value on enemy
+    private int valueOnTarget; // real value on enemy
     private String logMessage = "";
 
     public Action(String type, String name, int apCost, int value, int range, boolean targetFriendly) {
@@ -63,7 +63,7 @@ public abstract class Action {
         this.logMessage = "";
         if (current != null && target != null) {
             logMessage += current.getName() + " used " +
-                    this.getName() + " on " + target.getName() + " for " + this.getValueOfAction() + ".";
+                    this.getName() + " on " + target.getName() + " for " + this.getValueOnTarget() + ".";
         }
         return logMessage;
     }
@@ -81,37 +81,46 @@ public abstract class Action {
         this.logMessage = "";
         Unit unit = start.getUnit();
         boolean canExecute = true;
-        if (unit.getActionPoint() < this.getApCost()) {
-            System.out.println("Not enough AP");
+        if (unit.getAP() < this.getApCost()) {
+            System.out.println(this.getName() + ": Not enough AP.");
             logMessage += this.getName() + ": Not enough AP.";
             canExecute = false;
         }
 
         if (!isInRange(start, target)) {
-            System.out.println("Not in range.");
+            System.out.println(this.getName() + ": Not in range.");
             logMessage += this.getName() + ": Not in range.";
             canExecute = false;
         }
 
         if (!this.targetFriendly && unit.isTargetFriendly(target.getUnit())) {
-            System.out.println("Cannot damage allies.");
+            System.out.println(this.getName() + ": Cannot damage allies.");
             logMessage += this.getName() + ": Cannot damage allies.";
             canExecute = false;
         }
 
         if (this.targetFriendly && !unit.isTargetFriendly(target.getUnit())) {
-            System.out.println("Cannot buff enemies.");
+            System.out.println(this.getName() + ": Cannot buff enemies.");
             logMessage += this.getName() + ": Cannot buff enemies.";
             canExecute = false;
         }
         return canExecute;
     }
 
-    public int getValueOfAction() {
-        return valueOfAction;
+    public int getValueOnTarget() {
+        return valueOnTarget;
     }
 
-    public void setValueOfAction(int valueOfAction) {
-        this.valueOfAction = valueOfAction;
+    public void setValueOnTarget(int valueOfAction) {
+        this.valueOnTarget = valueOfAction;
+    }
+
+    @Override
+    public String toString() {
+        return
+                "Name: " + this.name + "\n" +
+                        "AP cost: " + this.apCost + "\n" +
+                        "Range: " + this.range + "\n" +
+                        "Value: " + this.value + "\n";
     }
 }
