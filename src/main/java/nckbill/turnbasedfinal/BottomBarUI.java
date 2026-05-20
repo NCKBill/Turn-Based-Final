@@ -27,10 +27,12 @@ public class BottomBarUI extends HBox {
         this.getChildren().clear();
         Button endTurnButton = new Button("End Turn");
 
-        boolean isPlayerTurn = false;
+
         Unit unit = gameManager.getTurnManager().getActiveUnit();
         if (unit != null && unit.getUnitController().getClass().getSimpleName().equals("AIController"))
             endTurnButton.setDisable(true);
+
+        boolean isPlayerTurn = (unit != null && unit.getUnitController().getClass().getSimpleName().equals("PlayerController"));
 
         endTurnButton.setDisable(!isPlayerTurn);
         endTurnButton.setOnAction(e -> {
