@@ -57,6 +57,7 @@ public class BottomBarUI extends HBox {
                 skillButton.setOnAction(event -> {
                     gameManager.setSelectedAction(action);
                     System.out.println("Selected skill: " + action.getName() + " (Click a target cell!)");
+                    gui.updateSideBarActionStats(action);
                 });
                 this.getChildren().add(skillButton);
             }
