@@ -24,7 +24,9 @@ public abstract class Unit {
     private List<Action> availableActions; // List to hold skills/actions
 
     public String getImagePath() {
-        String path = "/assets/units/" + this.getClass().getSimpleName() + ".png";
+        String friendly = isFriendly() ? "ally" : "enemy";
+        String unitName = this.getClass().getSimpleName().toLowerCase();
+        String path = "/assets/units/" + friendly + "-" + unitName + ".png";
         System.out.println("Path for image is: " + path);
         return path;
     }

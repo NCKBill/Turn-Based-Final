@@ -76,7 +76,7 @@ public class CellUI extends StackPane {
                 this.unitImageView.setImage(unitImage);
                 this.unitIcon.setText(""); // Hide the text letter since we have an image
             } catch (Exception e) {
-                // Fallback: If image fails to load, use the first letter of the name
+                // If image fails to load, use the first letter of the name
                 System.err.println("Could not load image: " + imagePath);
                 this.unitIcon.setText(unit.getName().substring(0, 1));
             }
