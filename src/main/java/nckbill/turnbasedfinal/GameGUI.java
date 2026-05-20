@@ -24,7 +24,7 @@ public class GameGUI extends Application {
     private StartUI startUI;
     private TopBarUI topBar;
     private BottomBarUI bottomBar;
-    private SideBarUI sideBar;
+    private SideBarUI sideBarUI;
     private CellUI[][] grid;
 
     private GameManager gameManager;
@@ -46,7 +46,7 @@ public class GameGUI extends Application {
         // initialize all boxes (visual on screen)
         topBar = new TopBarUI(this);
         bottomBar = new BottomBarUI(this);
-        sideBar = new SideBarUI();
+        sideBarUI = new SideBarUI();
 
         startUI = new StartUI(this);
         rootLayout.setCenter(startUI);
@@ -61,7 +61,7 @@ public class GameGUI extends Application {
     public void showGameGUI() {
         rootLayout.setTop(topBar);
         rootLayout.setBottom(bottomBar);
-        rootLayout.setRight(sideBar);
+        rootLayout.setRight(sideBarUI);
         rootLayout.setCenter(interactiveGrid);
     }
     public void hideGameGUI() {
@@ -93,7 +93,7 @@ public class GameGUI extends Application {
                 int finalRow = r;
                 int finalCol = c;
 
-                CellUI visualCell = new CellUI(finalRow, finalCol, sideBar.getSidebarStatsLabel(), this);
+                CellUI visualCell = new CellUI(finalRow, finalCol, sideBarUI.getSidebarStatsLabel(), this);
                 grid[r][c] = visualCell;
                 Cell currentCell = gameManager.getBackendGrid().getCell(finalRow, finalCol);
                 if (currentCell != null && currentCell.getUnit() != null) {
@@ -116,7 +116,7 @@ public class GameGUI extends Application {
     }
 
     public void updateSidebarStats(Unit unit) {
-        sideBar.updateSidebarStats(unit);
+        sideBarUI.updateSidebarStats(unit);
     }
 
     public void refreshVisualGrid() {
@@ -233,6 +233,14 @@ public class GameGUI extends Application {
             CellUI visualCell = grid[row][col];
             Cell backendCell = gameManager.getBackendGrid().getCell(row, col);
             visualCell.setUnit(backendCell != null ? backendCell.getUnit() : null);
+        }
+    }
+
+    public void logMessage(String message) {
+        if (sideBarUI != null) {
+            sideBarUI.addLogMessage(message);
+        } else {
+            System.out.println("Log (UI not ready): " + message);
         }
     }
 

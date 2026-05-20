@@ -124,18 +124,10 @@ public class UnitGenerator {
         Controller aiRanged = new AIController(gm, "ranged");
         Controller aiTank = new AIController(gm, "tank");
 
-        Unit unit;
-        switch (type) {
-            case 0:
-                unit = new Mage(isFriendly, aiRanged);
-                break;
-            case 1:
-                unit = new Rogue(isFriendly, aiTank);
-                break;
-            default:
-                unit = new Tank(isFriendly, aiTank);
-                break;
-        }
-        return unit;
+        return switch (type) {
+            case 0 -> new Mage(isFriendly, aiRanged);
+            case 1 -> new Rogue(isFriendly, aiTank);
+            default -> new Tank(isFriendly, aiTank);
+        };
     }
 }

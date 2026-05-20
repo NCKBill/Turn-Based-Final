@@ -19,8 +19,9 @@ public class MagicAttack extends Action {
 
                 // Damage = Default value + Power - Magic Defense
                 damage = this.getValue() + attacker.getPower() - target.getDefenseMagic();
-                if (damage < 0) damage = 0;
 
+                if (damage < 0) damage = 0;
+                this.setValueOfAction(damage);
                 System.out.println(target.getName() + " was attacked for " + damage + " HP.");
             } else {
                 // Prevent player from accidentally attacking a friendly unit

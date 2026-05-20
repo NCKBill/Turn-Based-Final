@@ -20,7 +20,7 @@ public class PhysicalAttack extends Action {
                 // Damage = Strength - Defense
                 damage = this.getValue() + attacker.getStrength() - target.getDefense();
                 if (damage < 0) damage = 0;
-
+                this.setValueOfAction(damage);
                 System.out.println(target.getName() + " was attacked for " + damage + " HP.");
             } else {
                 // Prevent player from accidentally attacking a friendly unit

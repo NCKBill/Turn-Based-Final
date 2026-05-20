@@ -18,8 +18,9 @@ public class DefAttack extends Action{
 
                 // Damage = Default value + Attacker Defense - Target Defense
                 damage = this.getValue() + attacker.getDefense() - target.getDefense();
-                if (damage < 0) damage = 0;
 
+                if (damage < 0) damage = 0;
+                this.setValueOfAction(damage);
                 System.out.println(target.getName() + " was attacked for " + damage + " HP.");
             } else {
                 // Prevent player from accidentally attacking a friendly unit

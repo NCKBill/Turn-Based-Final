@@ -10,7 +10,10 @@ public class TurnManager {
     private Unit activeUnit;
     private List<Unit> allActiveUnits;
     public boolean endGame = false;
-    public TurnManager() {
+    private final GameManager gm;
+
+    public TurnManager(GameManager gameManager) {
+        this.gm = gameManager;
         this.movementQueue = new PriorityQueue<>((a, b) -> b.roll() - a.roll());
         this.dice = new Random();
         this.allActiveUnits = new ArrayList<>();
@@ -56,6 +59,10 @@ public class TurnManager {
             if (activeUnit == null) {
                 calculateTurnOrder(this.allActiveUnits);
             }
+        }
+
+        if (activeUnit != null) {
+            gm.getGUI().logMessage(activeUnit.getName() + "'s Turn Started");
         }
     }
 

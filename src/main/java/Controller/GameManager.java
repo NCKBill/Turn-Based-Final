@@ -28,7 +28,7 @@ public class GameManager {
     public GameManager(GameGUI gui, int rows, int cols) {
         this.gui = gui;
         this.backendGrid = new Grid(rows, cols);
-        this.turnManager = new TurnManager();
+        this.turnManager = new TurnManager(this);
     }
 
     public void startGame(List<Unit> allActiveUnits) {
@@ -136,7 +136,7 @@ public class GameManager {
 
     public void resetGame() {
         backendGrid = new Grid(backendGrid.getRows(), backendGrid.getColumns());
-        turnManager = new TurnManager();
+        turnManager = new TurnManager(this);
         this.allyCountCurrent = 0;
         this.enemiesCountCurrent = 0;
         this.selectedAction = null;
@@ -162,5 +162,9 @@ public class GameManager {
 
     public void setSelectedViewUnit(Unit unit) {
         this.selectedViewUnit = unit;
+    }
+
+    public GameGUI getGUI() {
+        return gui;
     }
 }

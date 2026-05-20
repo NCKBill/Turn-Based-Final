@@ -14,6 +14,8 @@ public abstract class Action {
     private final int value; // default damage/heal before modifier
     private final int range;
     private final boolean targetFriendly; // can target friendly or not
+    private int valueOfAction; // real value on enemy
+    private String logMessage = "";
 
     public Action(String type, String name, int apCost, int value, int range, boolean targetFriendly) {
         this.type = type;
@@ -25,37 +27,6 @@ public abstract class Action {
     }
 
     public abstract int execute(Unit unit, Cell target);
-
-    /**
-     *
-     * @param unit: current unit
-     * @param start: cell of the current unit
-     * @param target: cell of the targeted unit
-     * @return whether the action casting from start can be executed to target
-     */
-    public boolean canExecute(Unit unit, Cell start, Cell target) {
-        boolean canExecute = true;
-        if (unit.getActionPoint() < this.getApCost()) {
-            System.out.println("Not enough AP");
-            canExecute = false;
-        }
-
-        if (!isInRange(start, target)) {
-            System.out.println("Not in range.");
-            canExecute = false;
-        }
-
-        if (!this.targetFriendly && unit.isTargetFriendly(target.getUnit())) {
-            System.out.println("Cannot damage allies.");
-            canExecute = false;
-        }
-
-        if (this.targetFriendly && !unit.isTargetFriendly(target.getUnit())) {
-            System.out.println("Cannot buff enemies.");
-            canExecute = false;
-        }
-        return canExecute;
-    }
 
     // Calculate hypotenuse for range
     // Get the rounded down value
@@ -80,12 +51,67 @@ public abstract class Action {
         return value;
     }
 
-
     public String getType() {
         return type;
     }
 
     public boolean isTargetFriendly() {
         return targetFriendly;
+    }
+
+    public String setLogAction(Unit current, Unit target) {
+        this.logMessage = "";
+        if (current != null && target != null) {
+            logMessage += current.getName() + " used " +
+                    this.getName() + " on " + target.getName() + " for " + this.getValueOfAction() + ".";
+        }
+        return logMessage;
+    }
+
+    public String getLogMessage() {
+        return logMessage;
+    }
+
+    /**
+     * @param start:  cell of the current unit
+     * @param target: cell of the targeted unit
+     * @return whether the action casting from start can be executed to target
+     */
+    public boolean canExecute(Cell start, Cell target) {
+        this.logMessage = "";
+        Unit unit = start.getUnit();
+        boolean canExecute = true;
+        if (unit.getActionPoint() < this.getApCost()) {
+            System.out.println("Not enough AP");
+            logMessage += this.getName() + ": Not enough AP.";
+            canExecute = false;
+        }
+
+        if (!isInRange(start, target)) {
+            System.out.println("Not in range.");
+            logMessage += this.getName() + ": Not in range.";
+            canExecute = false;
+        }
+
+        if (!this.targetFriendly && unit.isTargetFriendly(target.getUnit())) {
+            System.out.println("Cannot damage allies.");
+            logMessage += this.getName() + ": Cannot damage allies.";
+            canExecute = false;
+        }
+
+        if (this.targetFriendly && !unit.isTargetFriendly(target.getUnit())) {
+            System.out.println("Cannot buff enemies.");
+            logMessage += this.getName() + ": Cannot buff enemies.";
+            canExecute = false;
+        }
+        return canExecute;
+    }
+
+    public int getValueOfAction() {
+        return valueOfAction;
+    }
+
+    public void setValueOfAction(int valueOfAction) {
+        this.valueOfAction = valueOfAction;
     }
 }

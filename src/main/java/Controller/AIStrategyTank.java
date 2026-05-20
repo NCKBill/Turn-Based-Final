@@ -1,10 +1,11 @@
 package Controller;
 
+import Action.Action;
 import Board.Cell;
 import Unit.Unit;
-import Action.Action;
-import java.util.List;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class AIStrategyTank implements AIStrategy {
     @Override
@@ -38,7 +39,7 @@ public class AIStrategyTank implements AIStrategy {
             if (targetCell == null) continue;
 
             List<Cell> currentPath = gm.getBackendGrid().calculatePathDijkstra(startCell, targetCell);
-            // Keep shortest valid path
+            // Keep the shortest valid path
             if (!currentPath.isEmpty() && currentPath.size() < minPathLength) {
                 minPathLength = currentPath.size();
                 // Move adjacent to enemy unit instead of on top
@@ -53,19 +54,23 @@ public class AIStrategyTank implements AIStrategy {
         return bestPath.subList(0, moveLimit);
     }
 
-    private void attackAdjacentEnemies(Unit self, GameManager gm) {
-        Cell currentCell = gm.getBackendGrid().getCell(self);
+    private void attackAdjacentEnemies(Unit currentUnit, GameManager gm) {
+        Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
         int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
         for (int[] dir : directions) {
             Cell neighbor = gm.getBackendGrid().getCell(currentCell.getRow() + dir[0], currentCell.getCol() + dir[1]);
-            if (neighbor != null && neighbor.getUnit() != null && !self.isTargetFriendly(neighbor.getUnit())) {
-                for (Action action : self.getAvailableActions()) {
-                    if (action.getType().equals("Damage") && action.canExecute(self, currentCell, neighbor)) {
-                        int damage = action.execute(self, neighbor);
-                        gm.handleDamage(neighbor.getUnit(), damage);
-                        return;
-                    }
+            if (neighbor != null && neighbor.getUnit() != null && !currentUnit.isTargetFriendly(neighbor.getUnit())) {
+                for (Action action : currentUnit.getAvailableActions()) {
+                    if (action.getType().equals("Damage"))
+                        if (action.canExecute(currentCell, neighbor)) {
+                            int damage = action.execute(currentUnit, neighbor);
+                            gm.handleDamage(neighbor.getUnit(), damage);
+                            gm.getGUI().logMessage(action.setLogAction(currentUnit, neighbor.getUnit()));
+                            return;
+                        } else {
+                            gm.getGUI().logMessage(action.getLogMessage());
+                        }
                 }
             }
         }

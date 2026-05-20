@@ -30,8 +30,8 @@ public class AIStrategyRanged implements AIStrategy {
                 if (bestFriendlyTarget != null) {
                     Cell targetCell = gm.getBackendGrid().getCell(bestFriendlyTarget);
                     supportAction.execute(currentUnit, targetCell);
-
-                    continue; // Re-evaluate state (replaces recursion)
+                    gm.getGUI().logMessage(supportAction.setLogAction(currentUnit, targetCell.getUnit()));
+                    continue;
                 }
             }
 
@@ -46,25 +46,28 @@ public class AIStrategyRanged implements AIStrategy {
             Cell targetCell = gm.getBackendGrid().getCell(target);
             double dist = getDistance(selfCell, targetCell);
 
-            // Phase 3: Kite Phase (Safety Check)
+            // Phase 3: Kite Phase
             if (dist < SAFE_DISTANCE && currentUnit.getMovementPoint() > 0) {
                 Cell retreatCell = calculateRetreatCell(selfCell, targetCell, gm);
                 if (retreatCell != null) {
                     gm.executeMovement(currentUnit, Arrays.asList(selfCell, retreatCell), () -> {
-                        // The callback resumes the while loop dynamically after movement resolves
                         executeTurn(currentUnit, allUnits, gm);
                     });
-                    return; // Suspend execution for movement
+                    return;
                 }
             }
 
             // Phase 4: Attack Phase
             boolean attackedThisCycle = false;
             for (Action action : currentUnit.getAvailableActions()) {
-                if (action.getType().equals("Damage") && action.canExecute(currentUnit, selfCell, targetCell)) {
-                    performAttack(currentUnit, target, gm);
-                    attackedThisCycle = true;
-                    break;
+                if (action.getType().equals("Damage")) {
+                    if (action.canExecute(selfCell, targetCell)) {
+                        performAttack(currentUnit, target, gm);
+                        attackedThisCycle = true;
+                        break;
+                    } else {
+                        logFailedAction(gm, action);
+                    }
                 }
             }
 
@@ -83,7 +86,6 @@ public class AIStrategyRanged implements AIStrategy {
                         if (moveLimit > 1) {
                             List<Cell> pathToTake = path.subList(0, moveLimit);
                             gm.executeMovement(currentUnit, pathToTake, () -> {
-                                // The callback resumes the while loop dynamically after movement resolves
                                 executeTurn(currentUnit, allUnits, gm);
                             });
                             return;
@@ -92,23 +94,28 @@ public class AIStrategyRanged implements AIStrategy {
                 }
             }
 
-            // Phase 6: // End loop if no actions or moves are viable
+            // Phase 6: End loop if no actions or moves are viable
             endTurn(gm);
             return;
         }
     }
 
     private void performAttack(Unit currentUnit, Unit target, GameManager gm) {
-        Cell selfCell = gm.getBackendGrid().getCell(currentUnit);
         Cell targetCell = gm.getBackendGrid().getCell(target);
 
         for (Action action : currentUnit.getAvailableActions()) {
-            if (action.getType().equals("Damage") && action.canExecute(currentUnit, selfCell, targetCell)) {
+            if (action.getType().equals("Damage")) {
                 int damage = action.execute(currentUnit, targetCell);
                 gm.handleDamage(target, damage);
+
+                gm.getGUI().logMessage(action.setLogAction(currentUnit, target));
                 break;
             }
         }
+    }
+
+    private void logFailedAction(GameManager gm, Action action) {
+        gm.getGUI().logMessage(action.getLogMessage());
     }
 
     private boolean isInRange(Unit currentUnit, Cell targetCell, GameManager gm) {

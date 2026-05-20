@@ -1,8 +1,8 @@
 package Controller;
 
+import Action.Action;
 import Board.Cell;
 import Unit.Unit;
-import Action.Action;
 
 import java.util.List;
 
@@ -46,22 +46,27 @@ public class PlayerController implements Controller {
             if (clickedCell != null) {
                 int damage = 0;
                 boolean damageEnemies = true;
-                if (selectedAction.canExecute(activeUnit, gameManager.getBackendGrid().getCell(activeUnit), clickedCell)) {
+
+                if (selectedAction.canExecute(gameManager.getBackendGrid().getCell(activeUnit), clickedCell)) {
                     damage = selectedAction.execute(activeUnit, clickedCell);
 
-                    if (selectedAction.isTargetFriendly())
+                    if (selectedAction.isTargetFriendly()) {
                         damageEnemies = false;
+                    }
+
+                    if (damageEnemies)
+                        gameManager.handleDamage(clickedCell.getUnit(), damage);
+                    else {
+                        gameManager.handleHeal(clickedCell.getUnit(), damage);
+                    }
+                    gameManager.getGUI().logMessage(selectedAction.setLogAction(activeUnit, clickedCell.getUnit()));
+                } else {
+                    gameManager.getGUI().logMessage(selectedAction.getLogMessage());
                 }
-                if (damageEnemies)
-                    gameManager.handleDamage(clickedCell.getUnit(), damage);
-                else {
-                    gameManager.handleHeal(clickedCell.getUnit(), damage);
-                }
-                gameManager.setSelectedAction(null);       // Deselect skill after using it
-                gameManager.updateTurnDisplay(activeUnit); // Refresh UI to show damage
+
+                gameManager.setSelectedAction(null);
+                gameManager.updateTurnDisplay(activeUnit);
             }
-        } else {
-            System.out.println("No valid target.");
         }
     }
 }
