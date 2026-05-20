@@ -4,6 +4,9 @@ import Action.Action;
 import Board.Cell;
 import Board.Grid;
 import Unit.Unit;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
+import nckbill.turnbasedfinal.CellUI;
 import nckbill.turnbasedfinal.GameGUI;
 
 import java.util.List;
@@ -34,7 +37,7 @@ public class GameManager {
     public void startGame(List<Unit> allActiveUnits) {
         allyCountCurrent = 0;
         enemiesCountCurrent = 0;
-
+        gui.logMessage("Game Start.");
         for (Unit allActiveUnit : allActiveUnits) {
             if (allActiveUnit.isFriendly())
                 allyCountCurrent++;
@@ -54,20 +57,34 @@ public class GameManager {
         if (turnManager.endGame) {
             return;
         }
+        Unit activeUnit = turnManager.getActiveUnit();
+        if (activeUnit == null) {
+            turnManager.startNextTurn();
+            activeUnit = turnManager.getActiveUnit();
+        }
+
+        if (activeUnit == null) return;
+
+
+        final Unit currentUnit = activeUnit;
+
         javafx.application.Platform.runLater(() -> {
-            Unit activeUnit = turnManager.getActiveUnit();
-            if (activeUnit == null) {
-                turnManager.startNextTurn();
-                activeUnit = turnManager.getActiveUnit();
-            }
+            gui.updateTurnDisplay(currentUnit);
+            gui.logMessage(currentUnit.getName() + "'s Turn.");
 
-            // Tell GUI to update the turn display
-            gui.updateTurnDisplay(activeUnit);
-
-            if (activeUnit != null) {
-                activeUnit.performAction();
-            }
+            // prevent player's input during AI's turn
+            gui.getInteractiveGrid().setMouseTransparent(true);
         });
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(1));
+
+        pause.setOnFinished(event -> {
+            gui.getInteractiveGrid().setMouseTransparent(false);
+
+            currentUnit.performAction();
+        });
+
+        pause.play();
     }
 
     public void executeMovement(Unit movingUnit, List<Cell> path, Runnable onComplete) {
@@ -85,7 +102,7 @@ public class GameManager {
         // Allow players to view stats by clicking a unit
         if (clickedCell != null && clickedCell.getUnit() != null && selectedAction == null) {
             selectedViewUnit = clickedCell.getUnit();
-            gui.updateSidebarStats(selectedViewUnit);
+            gui.updateSidebarUnitStats(selectedViewUnit);
         }
 
         if (activeUnit != null && activeUnit.getUnitController() != null) {
@@ -101,19 +118,58 @@ public class GameManager {
         gui.updateTurnDisplay(unit);
     }
 
+    public void handleAction(Unit currentUnit, Unit target, Action action) {
+        if (target == null) {
+            return;
+        }
+
+        Cell attackerCell = getBackendGrid().getCell(currentUnit);
+        Cell targetCell = getBackendGrid().getCell(target);
+
+        CellUI attackerCellUI = null;
+        CellUI targetCellUI = null;
+
+        if (attackerCell != null && targetCell != null) {
+            attackerCellUI = gui.getGrid()[attackerCell.getRow()][attackerCell.getCol()];
+            targetCellUI = gui.getGrid()[targetCell.getRow()][targetCell.getCol()];
+        }
+
+        int damage = action.execute(currentUnit, targetCell);
+
+        if (action.getType().equals("Damage"))
+            handleDamage(target, damage);
+        else
+            handleHeal(target, action.getValue() + currentUnit.getPower());
+
+        if (attackerCellUI != null && targetCellUI != null) {
+            gui.executeUnitAnimation(attackerCellUI, targetCellUI);
+        }
+    }
     // Call when damage is applied
     public void handleDamage(Unit target, int damage) {
-        target.setHealthPoint(target.getHealthPoint() - damage);
+        target.setHP(target.getHP() - damage);
+        // Whenever a target takes damage or is healed
+        Cell targetCell = getBackendGrid().getCell(target);
+        CellUI targetCellUI = gui.getGrid()[targetCell.getRow()][targetCell.getCol()];
+
+        if (targetCellUI != null && targetCellUI.getUnitUI() != null) {
+            targetCellUI.getUnitUI().updateHP();
+        }
         // Check for Death
-        if (target.getHealthPoint() <= 0) {
+        if (target.getHP() <= 0) {
             if (target.isFriendly())
                 allyCountCurrent--;
             else
                 enemiesCountCurrent--;
+
+            gui.logMessage(target.getName() + " was murdered.");
+
             backendGrid.getCell(target).setUnit(null); // remove from grid
             turnManager.removeUnit(target); // remove from queue
+
             gui.refreshVisualGrid(); // remove from gui grid
             gui.updateTurnDisplay(turnManager.getActiveUnit()); // remove from top bar
+
             if (enemiesCountCurrent <= 0)
                 handleEnd("VICTORY!");
             else if (allyCountCurrent <= 0) {
@@ -122,17 +178,19 @@ public class GameManager {
         }
     }
 
+    public void handleHeal(Unit target, int heal) {
+        int potentialHP = target.getHP() + heal;
+        target.setHP(Math.min(potentialHP, target.getMaxHP()));
+    }
+
     public boolean isMatchOver() {
         return turnManager.endGame;
     }
+
     private void handleEnd(String message) {
         System.out.println(message);
         gui.showGameOver(message);
         turnManager.endGame = true;
-    }
-    public void handleHeal(Unit target, int heal) {
-        int potentialHP = target.getHealthPoint() + heal;
-        target.setHealthPoint(Math.min(potentialHP, target.getMaxHP()));
     }
 
     public void endPlayerTurn() {
@@ -150,6 +208,7 @@ public class GameManager {
 
         gui.refreshVisualGrid();
     }
+
     public Grid getBackendGrid() {
         return backendGrid;
     }

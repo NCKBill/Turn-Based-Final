@@ -1,4 +1,4 @@
-package Unit;
+package nckbill.turnbasedfinal;
 
 import javafx.scene.image.Image;
 
@@ -19,7 +19,6 @@ public class ImageCache {
                 return null;
             }
 
-            // Convert the internal URL to a string that JavaFX Image can read
             cache.put(path, new Image(imageUrl.toExternalForm()));
         }
         return cache.get(path);

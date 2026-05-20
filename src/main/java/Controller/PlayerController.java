@@ -30,10 +30,11 @@ public class PlayerController implements Controller {
 
             if (selectedViewUnit != null && selectedViewUnit == activeUnit) {
                 Cell startCell = gameManager.getBackendGrid().getCell(selectedViewUnit);
-                List<Cell> reachable = gameManager.getBackendGrid().getReachableCells(startCell, selectedViewUnit.getMovementPoint());
+                List<Cell> reachable = gameManager.getBackendGrid().getReachableCells(startCell, selectedViewUnit.getMP());
 
                 if (reachable.contains(clickedCell)) {
                     List<Cell> fullPath = gameManager.getBackendGrid().calculatePathDijkstra(startCell, clickedCell);
+                    gameManager.getGUI().clearPathHighlight();
                     gameManager.executeMovement(selectedViewUnit, fullPath, null);
                 } else {
                     System.out.println("Invalid movement: Target out of range.");
@@ -44,21 +45,9 @@ public class PlayerController implements Controller {
         // Player clicked an occupied cell with a skill queued up (Handling Attacks/Heals)
         else if (selectedAction != null) {
             if (clickedCell != null) {
-                int damage = 0;
-                boolean damageEnemies = true;
 
                 if (selectedAction.canExecute(gameManager.getBackendGrid().getCell(activeUnit), clickedCell)) {
-                    damage = selectedAction.execute(activeUnit, clickedCell);
-
-                    if (selectedAction.isTargetFriendly()) {
-                        damageEnemies = false;
-                    }
-
-                    if (damageEnemies)
-                        gameManager.handleDamage(clickedCell.getUnit(), damage);
-                    else {
-                        gameManager.handleHeal(clickedCell.getUnit(), damage);
-                    }
+                    gameManager.handleAction(activeUnit, clickedCell.getUnit(), selectedAction);
                     gameManager.getGUI().logMessage(selectedAction.setLogAction(activeUnit, clickedCell.getUnit()));
                 } else {
                     gameManager.getGUI().logMessage(selectedAction.getLogMessage());

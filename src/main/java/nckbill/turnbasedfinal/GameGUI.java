@@ -1,5 +1,6 @@
 package nckbill.turnbasedfinal;
 
+import Action.Action;
 import Board.Cell;
 import Controller.GameManager;
 import Controller.PlayerController;
@@ -93,7 +94,7 @@ public class GameGUI extends Application {
                 int finalRow = r;
                 int finalCol = c;
 
-                CellUI visualCell = new CellUI(finalRow, finalCol, sideBarUI.getSidebarStatsLabel(), this);
+                CellUI visualCell = new CellUI(finalRow, finalCol, sideBarUI.getUnitStatsLabel(), this);
                 grid[r][c] = visualCell;
                 Cell currentCell = gameManager.getBackendGrid().getCell(finalRow, finalCol);
                 if (currentCell != null && currentCell.getUnit() != null) {
@@ -115,8 +116,12 @@ public class GameGUI extends Application {
         topBar.updateTurnDisplay(active);
     }
 
-    public void updateSidebarStats(Unit unit) {
-        sideBarUI.updateSidebarStats(unit);
+    public void updateSidebarUnitStats(Unit unit) {
+        sideBarUI.updateSidebarUnitStats(unit);
+    }
+
+    public void updateSideBarActionStats(Action action) {
+        sideBarUI.updateActionStats(action);
     }
 
     public void refreshVisualGrid() {
@@ -132,7 +137,7 @@ public class GameGUI extends Application {
         Unit selected = getSelectedViewUnit();
         Unit active = gameManager.getTurnManager().getActiveUnit();
 
-        if (selected != null && selected == active && selected.isFriendly() && selected.getMovementPoint() > 0 && selected.getUnitController() instanceof PlayerController) {
+        if (selected != null && selected == active && selected.isFriendly() && selected.getMP() > 0 && selected.getUnitController() instanceof PlayerController) {
             Cell startCell = gameManager.getBackendGrid().getCell(selected);
             Cell targetCell = gameManager.getBackendGrid().getCell(targetRow, targetCol);
 
@@ -140,7 +145,7 @@ public class GameGUI extends Application {
                 List<Cell> fullPath = gameManager.getBackendGrid().calculatePathDijkstra(startCell, targetCell);
 
                 if (fullPath != null && !fullPath.isEmpty()) {
-                    int moveLimit = Math.min(fullPath.size(), selected.getMovementPoint() + 1);
+                    int moveLimit = Math.min(fullPath.size(), selected.getMP() + 1);
                     for (int i = 0; i < moveLimit; i++) {
                         Cell step = fullPath.get(i);
                         for (Node node : interactiveGrid.getChildren()) {
@@ -165,7 +170,7 @@ public class GameGUI extends Application {
     }
 
     public void executeMovement(Unit currentUnit, List<Cell> path, Runnable onCompleted) {
-        interactiveGrid.setDisable(true);
+        interactiveGrid.setMouseTransparent(true);
         Timeline timeline = new Timeline();
         int delay = 300;
 
@@ -179,12 +184,12 @@ public class GameGUI extends Application {
 
                 oldCell.setUnit(null);
                 step.setUnit(currentUnit);
-                currentUnit.setMovementPoint(currentUnit.getMovementPoint() - 1);
+                currentUnit.setMP(currentUnit.getMP() - 1);
 
                 updateVisualCell(oldR, oldC);
                 updateVisualCell(step.getRow(), step.getCol());
 
-                updateSidebarStats(currentUnit);
+                updateSidebarUnitStats(currentUnit);
             });
 
             timeline.getKeyFrames().add(keyFrame);
@@ -193,13 +198,33 @@ public class GameGUI extends Application {
 
         timeline.setOnFinished(event -> {
             System.out.println(currentUnit.getName() + " finished moving.");
-            interactiveGrid.setDisable(false);
+
             if (onCompleted != null) {
-                onCompleted.run();
+                javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(Duration.millis(500));
+                pause.setOnFinished(e -> {
+                    interactiveGrid.setMouseTransparent(false);
+                    onCompleted.run();
+                });
+                pause.play();
+            } else {
+                interactiveGrid.setMouseTransparent(false);
             }
         });
 
         timeline.play();
+    }
+
+    public void executeUnitAnimation(CellUI attackerCell, CellUI targetCell) {
+        UnitUI attackerUI = attackerCell.getUnitUI();
+
+        if (attackerUI != null) {
+            // Calculate vector pointing toward target
+            double dx = (targetCell.getCol() - attackerCell.getCol()) * 25;
+            double dy = (targetCell.getRow() - attackerCell.getRow()) * 25;
+
+            // Trigger bump animation
+            attackerUI.playAttackAnimation(dx, dy);
+        }
     }
 
     //  disable input after game over
@@ -211,18 +236,12 @@ public class GameGUI extends Application {
             alert.setContentText(message);
 
             alert.showAndWait();
-
-//            interactiveGrid.setDisable(true);
-//
-//            returnToMainMenu();
-//            gameManager.resetGame();
         });
     }
 
     public void restartGame() {
         Platform.runLater(() -> {
             interactiveGrid.setDisable(true);
-
             returnToMainMenu();
             gameManager.resetGame();
         });
@@ -254,5 +273,9 @@ public class GameGUI extends Application {
 
     public GridPane getInteractiveGrid() {
         return interactiveGrid;
+    }
+
+    public CellUI[][] getGrid() {
+        return grid;
     }
 }

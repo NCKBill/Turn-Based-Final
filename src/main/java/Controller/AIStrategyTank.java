@@ -50,7 +50,7 @@ public class AIStrategyTank implements AIStrategy {
             }
         }
         // Limit path to movement points
-        int moveLimit = Math.min(bestPath.size(), self.getMovementPoint() + 1);
+        int moveLimit = Math.min(bestPath.size(), self.getMP() + 1);
         return bestPath.subList(0, moveLimit);
     }
 
@@ -64,13 +64,13 @@ public class AIStrategyTank implements AIStrategy {
                 for (Action action : currentUnit.getAvailableActions()) {
                     if (action.getType().equals("Damage"))
                         if (action.canExecute(currentCell, neighbor)) {
-                            int damage = action.execute(currentUnit, neighbor);
-                            gm.handleDamage(neighbor.getUnit(), damage);
+                            gm.handleAction(currentUnit, neighbor.getUnit(), action);
                             gm.getGUI().logMessage(action.setLogAction(currentUnit, neighbor.getUnit()));
                             return;
-                        } else {
-                            gm.getGUI().logMessage(action.getLogMessage());
                         }
+//                    else {
+//                            gm.getGUI().logMessage(action.getLogMessage());
+//                        }
                 }
             }
         }

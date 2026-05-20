@@ -17,14 +17,14 @@ public class AIStrategyRanged implements AIStrategy {
         // Use a loop to process sequential instant actions without stacking frames
         while (true) {
             // Base Case
-            if (currentUnit.getActionPoint() <= 0 && currentUnit.getMovementPoint() <= 0) {
+            if (currentUnit.getAP() <= 0 && currentUnit.getMP() <= 0) {
                 endTurn(gm);
                 return;
             }
 
-            // Phase 1: Check for support action
+            // Check for support action
             Action supportAction = findSupportAction(currentUnit);
-            if (supportAction != null && currentUnit.getActionPoint() >= supportAction.getApCost()) {
+            if (supportAction != null && currentUnit.getAP() >= supportAction.getApCost()) {
                 Unit bestFriendlyTarget = findBestFriendlyTarget(currentUnit, supportAction, gm);
 
                 if (bestFriendlyTarget != null) {
@@ -35,7 +35,7 @@ public class AIStrategyRanged implements AIStrategy {
                 }
             }
 
-            // Phase 2: Identify Target
+            // Identify Target
             Unit target = findClosestEnemy(currentUnit, allUnits, gm);
             if (target == null) {
                 endTurn(gm);
@@ -46,8 +46,8 @@ public class AIStrategyRanged implements AIStrategy {
             Cell targetCell = gm.getBackendGrid().getCell(target);
             double dist = getDistance(selfCell, targetCell);
 
-            // Phase 3: Kite Phase
-            if (dist < SAFE_DISTANCE && currentUnit.getMovementPoint() > 0) {
+            // Kite Phase
+            if (dist < SAFE_DISTANCE && currentUnit.getMP() > 0) {
                 Cell retreatCell = calculateRetreatCell(selfCell, targetCell, gm);
                 if (retreatCell != null) {
                     gm.executeMovement(currentUnit, Arrays.asList(selfCell, retreatCell), () -> {
@@ -57,7 +57,7 @@ public class AIStrategyRanged implements AIStrategy {
                 }
             }
 
-            // Phase 4: Attack Phase
+            // Attack Phase
             boolean attackedThisCycle = false;
             for (Action action : currentUnit.getAvailableActions()) {
                 if (action.getType().equals("Damage")) {
@@ -65,8 +65,6 @@ public class AIStrategyRanged implements AIStrategy {
                         performAttack(currentUnit, target, gm);
                         attackedThisCycle = true;
                         break;
-                    } else {
-                        logFailedAction(gm, action);
                     }
                 }
             }
@@ -75,13 +73,13 @@ public class AIStrategyRanged implements AIStrategy {
                 continue;
             }
 
-            // Phase 5: Movement Phase
-            if (!isInRange(currentUnit, targetCell, gm)) {
-                if (currentUnit.getMovementPoint() > 0) {
+            // Movement Phase
+            if (!hasActionInRange(currentUnit, targetCell, gm)) {
+                if (currentUnit.getMP() > 0) {
                     List<Cell> path = gm.getBackendGrid().calculatePathDijkstra(selfCell, targetCell);
                     if (path.size() > 1) {
                         int maxSafeSize = Math.max(1, path.size() - SAFE_DISTANCE + 1);
-                        int moveLimit = Math.min(maxSafeSize, currentUnit.getMovementPoint() + 1);
+                        int moveLimit = Math.min(maxSafeSize, currentUnit.getMP() + 1);
 
                         if (moveLimit > 1) {
                             List<Cell> pathToTake = path.subList(0, moveLimit);
@@ -101,12 +99,9 @@ public class AIStrategyRanged implements AIStrategy {
     }
 
     private void performAttack(Unit currentUnit, Unit target, GameManager gm) {
-        Cell targetCell = gm.getBackendGrid().getCell(target);
-
         for (Action action : currentUnit.getAvailableActions()) {
             if (action.getType().equals("Damage")) {
-                int damage = action.execute(currentUnit, targetCell);
-                gm.handleDamage(target, damage);
+                gm.handleAction(currentUnit, target, action);
 
                 gm.getGUI().logMessage(action.setLogAction(currentUnit, target));
                 break;
@@ -114,11 +109,11 @@ public class AIStrategyRanged implements AIStrategy {
         }
     }
 
-    private void logFailedAction(GameManager gm, Action action) {
-        gm.getGUI().logMessage(action.getLogMessage());
-    }
+//    private void logFailedAction(GameManager gm, Action action) {
+//        gm.getGUI().logMessage(action.getLogMessage());
+//    }
 
-    private boolean isInRange(Unit currentUnit, Cell targetCell, GameManager gm) {
+    private boolean hasActionInRange(Unit currentUnit, Cell targetCell, GameManager gm) {
         List<Action> availableActions = currentUnit.getAvailableActions();
         Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
 
@@ -194,7 +189,7 @@ public class AIStrategyRanged implements AIStrategy {
 
         for (Unit ally : allies) {
             if (action.isInRange(gm.getBackendGrid().getCell(currentUnit), gm.getBackendGrid().getCell(ally))) {
-                double healthRatio = (double) ally.getHealthPoint() / ally.getMaxHP();
+                double healthRatio = (double) ally.getHP() / ally.getMaxHP();
                 if (healthRatio < lowestHealthRatio) {
                     lowestHealthRatio = healthRatio;
                     bestTarget = ally;

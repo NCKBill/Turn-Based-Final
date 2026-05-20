@@ -1,9 +1,7 @@
 package nckbill.turnbasedfinal;
 
-import Unit.ImageCache;
 import Unit.Unit;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -13,7 +11,8 @@ public class CellUI extends StackPane {
 
     private int row;
     private int col;
-    private Unit currentUnit;
+    private Unit unit;
+    private UnitUI unitVisual;
 
     private Rectangle background;
     private Label unitIcon;
@@ -32,14 +31,14 @@ public class CellUI extends StackPane {
         this.gui = gui;
 
         this.setPrefSize(CELL_SIZE, CELL_SIZE);
-
-        // Setup Background Shape
+        this.setStyle("-fx-border-color: #333333; -fx-border-width: 1px;");
+        // Set up Background Shape
         background = new Rectangle(CELL_SIZE, CELL_SIZE);
         background.setFill(Color.LIGHTGRAY);
         background.setStroke(Color.BLACK);
         background.setMouseTransparent(true);
 
-        // Set up the Old Text Icon
+        // Set up the Icon
         unitIcon = new Label("");
         unitIcon.setStyle("-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: black;");
         unitIcon.setMouseTransparent(true);
@@ -57,40 +56,39 @@ public class CellUI extends StackPane {
         setupHoverEvents();
     }
 
+
     public void setUnit(Unit unit) {
-        this.currentUnit = unit;
+        // This prevents the ongoing attack animation from being destroyed.
+        if (this.unit == unit && this.unit != null && this.unitVisual != null) {
+            this.unitVisual.updateHP();
+            resetColor();
+            return;
+        }
+
+        this.unit = unit;
+        this.getChildren().clear();
+        this.getChildren().add(background);
 
         if (unit != null) {
-            boolean isFriendly = unit.isFriendly();
-
-            // Set cell team color
-            if (isFriendly)
-                background.setFill(Color.LIGHTBLUE);
-            else
-                background.setFill(Color.LIGHTCORAL);
-
-            // Fetch and set the image!
-            String imagePath = unit.getImagePath();
-            try {
-                Image unitImage = ImageCache.getImage(imagePath);
-                this.unitImageView.setImage(unitImage);
-                this.unitIcon.setText(""); // Hide the text letter since we have an image
-            } catch (Exception e) {
-                // If image fails to load, use the first letter of the name
-                System.err.println("Could not load image: " + imagePath);
-                this.unitIcon.setText(unit.getName().substring(0, 1));
-            }
-
+            this.unitVisual = new UnitUI(unit);
+            this.getChildren().add(this.unitVisual);
         } else {
-            // Empty Cell: Clear both text and image
-            unitIcon.setText("");
-            this.unitImageView.setImage(null);
-            background.setFill(Color.LIGHTGRAY);
+            this.unitVisual = null;
         }
+        resetColor();
     }
 
-    public Unit getUnit() { return currentUnit; }
-    public boolean isEmpty() { return currentUnit == null; }
+    public UnitUI getUnitUI() {
+        return unitVisual;
+    }
+
+    public Unit getUnit() {
+        return unit;
+    }
+
+    public boolean isEmpty() {
+        return unit == null;
+    }
 
     public void setHighlight(boolean isReachable) {
         this.isReachable = isReachable;
@@ -113,13 +111,14 @@ public class CellUI extends StackPane {
     }
 
     private void resetColor() {
-        if (currentUnit != null) {
-            background.setFill(currentUnit.isFriendly() ? Color.LIGHTBLUE : Color.LIGHTCORAL);
+        if (unit != null) {
+            background.setFill(unit.isFriendly() ? Color.LIGHTBLUE : Color.LIGHTCORAL);
         } else {
             background.setFill(Color.LIGHTGRAY);
         }
         background.setStroke(Color.BLACK);
     }
+
     public int getRow() {
         return row;
     }
@@ -138,9 +137,9 @@ public class CellUI extends StackPane {
 
     private void setupHoverEvents() {
         this.setOnMouseEntered(event -> {
-            if (currentUnit != null) {
-                sideStatsLabel.setText(currentUnit.toString());
-                background.setStroke(currentUnit.isFriendly() ? Color.BLUE : Color.RED);
+            if (unit != null) {
+                sideStatsLabel.setText(unit.toString());
+                background.setStroke(unit.isFriendly() ? Color.BLUE : Color.RED);
             } else {
                 sideStatsLabel.setText("Empty Terrain:\n[" + row + ", " + col + "]");
                 background.setStroke(Color.GREEN);

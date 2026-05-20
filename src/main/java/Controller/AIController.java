@@ -2,6 +2,7 @@ package Controller;
 
 import Board.Cell;
 import Unit.Unit;
+
 import java.util.List;
 
 public class AIController implements Controller {
@@ -23,12 +24,11 @@ public class AIController implements Controller {
 
     @Override
     public void takeTurn(Unit unit) {
-        // The Controller handles the turn flow, delegating logic to the strategy
         if (currentStrategy != null) {
             // Fetch the current list of active units from the manager
             List<Unit> allUnits = gameManager.getTurnManager().getAllActiveUnits();
 
-            // Execute the specific behavior (Tank or Ranged)
+            // Execute class behavior: Tank or Ranged
             currentStrategy.executeTurn(unit, allUnits, gameManager);
         }
     }
