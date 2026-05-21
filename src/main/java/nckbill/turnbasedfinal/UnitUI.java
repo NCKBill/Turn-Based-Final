@@ -4,9 +4,11 @@ import Unit.Unit;
 import javafx.animation.SequentialTransition;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
@@ -14,6 +16,7 @@ public class UnitUI extends VBox {
     private final Unit unit;
     private final ImageView unitImage;
     private final ProgressBar hpBar;
+    private Label hpText;
 
     public UnitUI(Unit unit) {
         this.unit = unit;
@@ -37,11 +40,21 @@ public class UnitUI extends VBox {
 
         // HP Bar
         this.hpBar = new ProgressBar();
-        this.hpBar.setPrefWidth(40);
+        this.hpBar.setPrefWidth(50);
         this.hpBar.setPrefHeight(10);
-        hpBar.setStyle("-fx-accent: #cc2929;");
+        this.hpBar.setStyle(
+                "-fx-accent: red; " +
+                        "-fx-control-inner-background: transparent; " +
+                        "-fx-box-border: transparent; " +
+                        "-fx-background-color: black; " +
+                        "-fx-padding: 0;"
+        );
+        // HP text
+        this.hpText = new Label();
+        this.hpText.setStyle("-fx-font-size: 7px; -fx-font-weight: bold; -fx-text-fill: white");
+        StackPane hpContainer = new StackPane(hpBar, hpText);
 
-        this.getChildren().addAll(unitImage, hpBar);
+        this.getChildren().addAll(unitImage, hpContainer);
 
         // Set the initial HP state
         updateHP();
@@ -49,6 +62,7 @@ public class UnitUI extends VBox {
 
     public void updateHP() {
         double hpPercentage = (double) unit.getHP() / unit.getMaxHP();
+        hpText.setText(unit.getHP() + "/" + unit.getMaxHP());
         hpBar.setProgress(hpPercentage);
     }
 
