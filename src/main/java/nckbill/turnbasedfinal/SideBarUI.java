@@ -84,6 +84,11 @@ public class SideBarUI extends BorderPane {
         this.setBottom(bottomWrapper);
     }
 
+    public void clearLog() {
+        Platform.runLater(() -> {
+            logMessageContainer.getChildren().clear();
+        });
+    }
     /**
      * Method to be called by GameGUI to drop new messages into the sidebar.
      */

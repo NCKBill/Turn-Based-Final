@@ -244,6 +244,7 @@ public class GameGUI extends Application {
             interactiveGrid.setDisable(true);
             returnToMainMenu();
             gameManager.resetGame();
+            sideBarUI.clearLog();
         });
     }
 
