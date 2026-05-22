@@ -29,7 +29,7 @@ public class AIStrategyRanged implements AIStrategy {
 
                 if (bestFriendlyTarget != null) {
                     Cell targetCell = gm.getBackendGrid().getCell(bestFriendlyTarget);
-                    supportAction.execute(currentUnit, targetCell);
+                    gm.handleAction(currentUnit, targetCell.getUnit(), supportAction);
                     gm.getGUI().logMessage(supportAction.setLogAction(currentUnit, targetCell.getUnit()));
                     continue;
                 }

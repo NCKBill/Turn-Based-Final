@@ -181,6 +181,13 @@ public class GameManager {
     public void handleHeal(Unit target, int heal) {
         int potentialHP = target.getHP() + heal;
         target.setHP(Math.min(potentialHP, target.getMaxHP()));
+
+        Cell targetCell = getBackendGrid().getCell(target);
+        CellUI targetCellUI = gui.getGrid()[targetCell.getRow()][targetCell.getCol()];
+
+        if (targetCellUI != null && targetCellUI.getUnitUI() != null) {
+            targetCellUI.getUnitUI().updateHP();
+        }
     }
 
     public boolean isMatchOver() {
