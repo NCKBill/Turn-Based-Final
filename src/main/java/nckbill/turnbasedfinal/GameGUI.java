@@ -258,7 +258,7 @@ public class GameGUI extends Application {
         Platform.runLater(() -> {
             interactiveGrid.setDisable(true);
             returnToMainMenu();
-            gameManager.resetGame();
+            gameManager.resetGame(0);
             sideBarUI.clearLog();
         });
     }

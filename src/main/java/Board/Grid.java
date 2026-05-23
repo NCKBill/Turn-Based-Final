@@ -11,17 +11,18 @@ public class Grid {
     private final int[][] direction = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
     public Grid(int rows, int columns) {
+        this(rows, columns, new Random().nextInt(4));
+    }
+
+    public Grid(int rows, int columns, int mapIndex) {
         this.rows = rows;
         this.columns = columns;
         this.grid = new Cell[rows][columns];
-        initializeGrid();
+        initializeGrid(mapIndex);
     }
 
-    private void initializeGrid() {
-        Random random = new Random();
-        int rand = random.nextInt(4); // Preset 4 maps in Maps.java, numbered from 0 to 3
-        
-        Maps map = new Maps(rand, this.rows, this.columns);
+    private void initializeGrid(int mapIndex) {
+        Maps map = new Maps(mapIndex, this.rows, this.columns);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 grid[i][j] = new Cell(i, j, map.getMap()[i][j]);

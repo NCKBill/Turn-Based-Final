@@ -14,24 +14,64 @@ public class StartUI extends VBox {
     private Button startButton;
     private Button startButtonAI;
     private String selectedClass = "Tank"; // Default choice
+    private int selectedMap = 0; // Default map
     private final GameGUI gui;
 
     public StartUI(GameGUI gui) {
         this.gui = gui;
         this.setAlignment(Pos.CENTER);
-        this.setSpacing(30);
+        this.setSpacing(20);
         this.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
 
         Label title = new Label("Select Your Character");
-        title.setFont(new Font("Arial", 40));
+        title.setFont(new Font("Arial", 30));
         title.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
 
         // Character Selection Row
         HBox selectionBox = createSelectionBox();
 
+        Label mapTitle = new Label("Select Map");
+        mapTitle.setFont(new Font("Arial", 30));
+        mapTitle.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+
+        // Map Selection Row
+        HBox mapSelectionBox = createMapSelectionBox();
+
         initializeButtons();
 
-        this.getChildren().addAll(title, selectionBox, startButton, startButtonAI);
+        this.getChildren().addAll(title, selectionBox, mapTitle, mapSelectionBox, startButton, startButtonAI);
+    }
+
+    private HBox createMapSelectionBox() {
+        HBox box = new HBox(15);
+        box.setAlignment(Pos.CENTER);
+
+        Button[] mapButtons = new Button[4];
+        for (int i = 0; i < 4; i++) {
+            int mapIndex = i;
+            String path = "/assets/map-thumbnails/map-thumbnail" + (i + 1) + ".png";
+            javafx.scene.image.ImageView thumb = new javafx.scene.image.ImageView(ImageCache.getImage(path));
+            thumb.setFitWidth(100);
+            thumb.setFitHeight(100);
+
+            Button mapBtn = new Button();
+            mapBtn.setGraphic(thumb);
+            mapBtn.setStyle("-fx-background-color: transparent; -fx-border-color: #7f8c8d; -fx-border-width: 3px; -fx-padding: 0;");
+            
+            mapButtons[i] = mapBtn;
+
+            mapBtn.setOnAction(e -> {
+                selectedMap = mapIndex;
+                System.out.println("Selected Map: " + (mapIndex + 1));
+                for (Button btn : mapButtons) {
+                    btn.setStyle("-fx-background-color: transparent; -fx-border-color: #7f8c8d; -fx-border-width: 3px; -fx-padding: 0;");
+                }
+                mapBtn.setStyle("-fx-background-color: transparent; -fx-border-color: #ffffff; -fx-border-width: 3px; -fx-padding: 0;");
+            });
+            box.getChildren().add(mapBtn);
+        }
+        mapButtons[selectedMap].setStyle("-fx-background-color: transparent; -fx-border-color: #ffffff; -fx-border-width: 3px; -fx-padding: 0;");
+        return box;
     }
 
     // Initialize buttons
@@ -48,6 +88,7 @@ public class StartUI extends VBox {
         // enemy team is random
         this.getStartButton().setOnAction(event -> {
             String choice = this.getSelectedClass();
+            gui.getGameManager().resetGame(selectedMap);
             transitionToGame();
 
             UnitGenerator unitGenerator = new UnitGenerator();
@@ -57,6 +98,7 @@ public class StartUI extends VBox {
         });
         // start game with 4 random units
         this.getStartButtonAI().setOnAction(e -> {
+            gui.getGameManager().resetGame(selectedMap);
             transitionToGame();
 
             UnitGenerator unitGenerator = new UnitGenerator();
