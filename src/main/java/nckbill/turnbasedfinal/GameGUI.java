@@ -130,7 +130,10 @@ public class GameGUI extends Application {
         for (Node node : interactiveGrid.getChildren()) {
             if (node instanceof CellUI visualCell) {
                 Cell currentCell = gameManager.getBackendGrid().getCell(visualCell.getRow(), visualCell.getCol());
-                visualCell.setUnit(currentCell != null ? currentCell.getUnit() : null);
+                if (currentCell != null) {
+                    visualCell.setTerrainType(currentCell.getTerrainType());
+                    visualCell.setUnit(currentCell.getUnit());
+                }
             }
         }
     }

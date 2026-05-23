@@ -81,6 +81,11 @@ public class CellUI extends StackPane {
         resetColor();
     }
 
+    public void setTerrainType(int terrainType) {
+        this.terrainType = terrainType;
+        resetColor();
+    }
+
     public UnitUI getUnitUI() {
         return unitVisual;
     }
