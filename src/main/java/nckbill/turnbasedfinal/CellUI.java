@@ -24,9 +24,12 @@ public class CellUI extends StackPane {
     private static final int CELL_SIZE = 50;
 
 
-    public CellUI(int row, int col, Label sideStatsLabel, GameGUI gui) {
+    private int terrainType = 0; // 0: Grass, 1: Water, 2: Woods, 3: Wall
+
+    public CellUI(int row, int col, int terrainType, Label sideStatsLabel, GameGUI gui) {
         this.row = row;
         this.col = col;
+        this.terrainType = terrainType;
         this.sideStatsLabel = sideStatsLabel;
         this.gui = gui;
 
@@ -34,7 +37,7 @@ public class CellUI extends StackPane {
         this.setStyle("-fx-border-color: #333333; -fx-border-width: 1px;");
         // Set up Background Shape
         background = new Rectangle(CELL_SIZE, CELL_SIZE);
-        background.setFill(Color.LIGHTGRAY);
+        resetColor();
         background.setStroke(Color.BLACK);
         background.setMouseTransparent(true);
 
@@ -111,10 +114,21 @@ public class CellUI extends StackPane {
     }
 
     private void resetColor() {
+        Color terrainColor;
+        switch (terrainType) {
+            case 1: terrainColor = Color.DARKBLUE; break; // Water
+            case 2: terrainColor = Color.SADDLEBROWN; break; // Woods
+            case 3: terrainColor = Color.BLACK; break; // Wall
+            case 0:
+            default: terrainColor = Color.GREEN; break; // Grass
+        }
+
         if (unit != null) {
-            background.setFill(unit.isFriendly() ? Color.LIGHTBLUE : Color.LIGHTCORAL);
+            // Mix unit color with terrain if unit present
+            Color unitColor = unit.isFriendly() ? Color.LIGHTBLUE : Color.LIGHTCORAL;
+            background.setFill(unitColor.deriveColor(0, 1, 1, 0.7).interpolate(terrainColor, 0.3));
         } else {
-            background.setFill(Color.LIGHTGRAY);
+            background.setFill(terrainColor);
         }
         background.setStroke(Color.BLACK);
     }

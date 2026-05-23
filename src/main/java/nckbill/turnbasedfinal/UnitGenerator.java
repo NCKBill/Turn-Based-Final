@@ -69,7 +69,8 @@ public class UnitGenerator {
             c = rand.nextInt(0, cols);
 
             Cell targetCell = grid.getCell(r, c);
-            if (targetCell != null && !targetCell.isOccupied()) {
+            if (targetCell != null && !targetCell.isOccupied() && targetCell.getTerrainType() == 0) {
+                // Target cell has to exist, be unoccupied, and be grass
                 targetCell.setUnit(unit);
                 return true;
             }

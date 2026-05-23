@@ -18,9 +18,13 @@ public class Grid {
     }
 
     private void initializeGrid() {
+        Random random = new Random();
+        int rand = random.nextInt(4); // Preset 4 maps in Maps.java, numbered from 0 to 3
+        
+        Maps map = new Maps(rand, this.rows, this.columns);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                grid[i][j] = new Cell(i, j, "Normal");
+                grid[i][j] = new Cell(i, j, map.getMap()[i][j]);
             }
         }
     }
@@ -96,8 +100,11 @@ public class Grid {
 
                 if (gridNeighbor != null) {
                     if (gridNeighbor.isOccupied() && !gridNeighbor.equals(end)) continue;
-
+                    
                     int moveCost = gridNeighbor.getTerrainCost();
+                    // Prevent entering impassable terrain (Wall)
+                    if (moveCost == Integer.MAX_VALUE) continue;
+
                     int totalCost = current.cost + moveCost;
 
                     // Compare total cost of current path found to previously recorded path of the neighbour
@@ -165,6 +172,9 @@ public class Grid {
                 // Check if valid and walkable
                 if (neighbor != null && neighbor.getUnit() == null) {
                     int moveCost = neighbor.getTerrainCost();
+                    // Prevent entering impassable terrain (Wall)
+                    if (moveCost == Integer.MAX_VALUE) continue;
+
                     int totalCost = current.cost + moveCost;
 
                     if (totalCost <= mpLimit && totalCost < bestCosts.getOrDefault(neighbor, Integer.MAX_VALUE)) {
