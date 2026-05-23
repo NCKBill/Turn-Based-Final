@@ -9,18 +9,13 @@ public class Cell {
     private Unit occupant;
     private int row;
     private int col;
-    private String terrainType;
+    private int terrainType;
 
-    public Cell(int row, int col, String terrainType) {
+    public Cell(int row, int col, int terrainType) {
         this.row = row;
         this.col = col;
-        this.terrainType = terrainType;
+        this.terrainType = terrainType; // Terrain types: 0 (normal/grass), 1 (water), 2 (trees/woods), 3 (mountain/wall)
         this.occupant = null;
-    }
-
-    public Cell(int row, int col) {
-        this.row = row;
-        this.col = col;
     }
 
     //Checks if the cell currently holds a unit
@@ -44,15 +39,20 @@ public class Cell {
         return col;
     }
 
-    public String getTerrainType() {
+    public int getTerrainType() {
         return terrainType;
     }
 
-    public void setTerrainType(String terrainType) {
-        this.terrainType = terrainType;
-    }
-
     public int getTerrainCost() {
-        return "Normal".equals(this.terrainType) ? 1 : Integer.MAX_VALUE;
+        // Terrain types: 0 (normal/grass), 1 (water), 2 (trees/woods), 3 (mountain/wall)
+        int cost = 0;
+        switch (this.terrainType) {
+            case 0: cost = 1; break;
+            case 1: cost = 2; break;
+            case 2: cost = 2; break;
+            case 3: cost = Integer.MAX_VALUE; break;
+        }
+
+        return cost;
     }
 }

@@ -94,9 +94,11 @@ public class GameGUI extends Application {
                 int finalRow = r;
                 int finalCol = c;
 
-                CellUI visualCell = new CellUI(finalRow, finalCol, sideBarUI.getUnitStatsLabel(), this);
-                grid[r][c] = visualCell;
                 Cell currentCell = gameManager.getBackendGrid().getCell(finalRow, finalCol);
+                int terrainType = (currentCell != null) ? currentCell.getTerrainType() : 0;
+
+                CellUI visualCell = new CellUI(finalRow, finalCol, terrainType, sideBarUI.getUnitStatsLabel(), this);
+                grid[r][c] = visualCell;
                 if (currentCell != null && currentCell.getUnit() != null) {
                     visualCell.setUnit(currentCell.getUnit());
                 }
