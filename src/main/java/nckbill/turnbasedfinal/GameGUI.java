@@ -150,15 +150,25 @@ public class GameGUI extends Application {
                 List<Cell> fullPath = gameManager.getBackendGrid().calculatePathDijkstra(startCell, targetCell);
 
                 if (fullPath != null && !fullPath.isEmpty()) {
-                    int moveLimit = Math.min(fullPath.size(), selected.getMP() + 1);
-                    for (int i = 0; i < moveLimit; i++) {
+                    int remainingMP = selected.getMP();
+                    // Skip start cell in path if it is included
+                    int startIndex = (fullPath.get(0).equals(startCell)) ? 1 : 0;
+                    
+                    for (int i = startIndex; i < fullPath.size(); i++) {
                         Cell step = fullPath.get(i);
-                        for (Node node : interactiveGrid.getChildren()) {
-                            if (node instanceof CellUI cellUI) {
-                                if (cellUI.getRow() == step.getRow() && cellUI.getCol() == step.getCol()) {
-                                    cellUI.setPathHighlight(true);
+                        int cost = step.getTerrainCost();
+                        
+                        if (remainingMP >= cost) {
+                            remainingMP -= cost;
+                            for (Node node : interactiveGrid.getChildren()) {
+                                if (node instanceof CellUI cellUI) {
+                                    if (cellUI.getRow() == step.getRow() && cellUI.getCol() == step.getCol()) {
+                                        cellUI.setPathHighlight(true);
+                                    }
                                 }
                             }
+                        } else {
+                            break; // Out of MP
                         }
                     }
                 }
@@ -189,7 +199,7 @@ public class GameGUI extends Application {
 
                 oldCell.setUnit(null);
                 step.setUnit(currentUnit);
-                currentUnit.setMP(currentUnit.getMP() - 1);
+                currentUnit.setMP(currentUnit.getMP() - step.getTerrainCost());
 
                 updateVisualCell(oldR, oldC);
                 updateVisualCell(step.getRow(), step.getCol());
