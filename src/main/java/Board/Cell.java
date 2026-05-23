@@ -10,12 +10,14 @@ public class Cell {
     private int row;
     private int col;
     private int terrainType;
+    private int variant;
 
     public Cell(int row, int col, int terrainType) {
         this.row = row;
         this.col = col;
         this.terrainType = terrainType; // Terrain types: 0 (normal/grass), 1 (water), 2 (trees/woods), 3 (mountain/wall)
         this.occupant = null;
+        this.variant = (int) (Math.random() * 3) + 1;
     }
 
     //Checks if the cell currently holds a unit
@@ -41,6 +43,10 @@ public class Cell {
 
     public int getTerrainType() {
         return terrainType;
+    }
+
+    public int getVariant() {
+        return variant;
     }
 
     public int getTerrainCost() {

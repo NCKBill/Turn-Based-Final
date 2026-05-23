@@ -1,5 +1,6 @@
 package nckbill.turnbasedfinal;
 
+import Board.Cell;
 import Unit.Unit;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -15,6 +16,7 @@ public class CellUI extends StackPane {
     private UnitUI unitVisual;
 
     private Rectangle background;
+    private ImageView terrainImageView;
     private Label unitIcon;
     private Label sideStatsLabel;
     private boolean isReachable = false;
@@ -25,6 +27,7 @@ public class CellUI extends StackPane {
 
 
     private int terrainType = 0; // 0: Grass, 1: Water, 2: Woods, 3: Wall
+    private int variant = 1;
 
     public CellUI(int row, int col, int terrainType, Label sideStatsLabel, GameGUI gui) {
         this.row = row;
@@ -33,13 +36,27 @@ public class CellUI extends StackPane {
         this.sideStatsLabel = sideStatsLabel;
         this.gui = gui;
 
+        // Try to fetch variant from backend if possible
+        if (gui.getGameManager() != null && gui.getGameManager().getBackendGrid() != null) {
+            Cell backendCell = gui.getGameManager().getBackendGrid().getCell(row, col);
+            this.variant = (backendCell != null) ? backendCell.getVariant() : 1;
+        }
+
         this.setPrefSize(CELL_SIZE, CELL_SIZE);
         this.setStyle("-fx-border-color: #333333; -fx-border-width: 1px;");
-        // Set up Background Shape
+        
+        // Set up Terrain Image View
+        terrainImageView = new ImageView();
+        terrainImageView.setFitWidth(CELL_SIZE);
+        terrainImageView.setFitHeight(CELL_SIZE);
+        terrainImageView.setMouseTransparent(true);
+        setTerrainImage();
+
+        // Set up Background Overlay for highlights
         background = new Rectangle(CELL_SIZE, CELL_SIZE);
-        resetColor();
-        background.setStroke(Color.BLACK);
         background.setMouseTransparent(true);
+        background.setOpacity(0.4); // Mild highlight
+        resetColor();
 
         // Set up the Icon
         unitIcon = new Label("");
@@ -51,12 +68,25 @@ public class CellUI extends StackPane {
         unitImageView.setFitWidth(CELL_SIZE - 4);
         unitImageView.setFitHeight(CELL_SIZE - 4);
         unitImageView.setPreserveRatio(true);
-        unitImageView.setMouseTransparent(true); // Let StackPane handle clicks/hovers
+        unitImageView.setMouseTransparent(true);
 
         // Add to StackPane
-        this.getChildren().addAll(background, unitIcon, unitImageView);
+        this.getChildren().addAll(terrainImageView, background, unitIcon, unitImageView);
 
         setupHoverEvents();
+    }
+
+    private void setTerrainImage() {
+        String type;
+        switch (terrainType) {
+            case 1: type = "water"; break;
+            case 2: type = "tree"; break;
+            case 3: type = "mountain"; break;
+            case 0:
+            default: type = "grass"; break;
+        }
+        String path = "/assets/terrains/" + type + "-" + variant + ".png";
+        terrainImageView.setImage(ImageCache.getImage(path));
     }
 
 
@@ -70,7 +100,7 @@ public class CellUI extends StackPane {
 
         this.unit = unit;
         this.getChildren().clear();
-        this.getChildren().add(background);
+        this.getChildren().addAll(terrainImageView, background);
 
         if (unit != null) {
             this.unitVisual = new UnitUI(unit);
@@ -83,6 +113,11 @@ public class CellUI extends StackPane {
 
     public void setTerrainType(int terrainType) {
         this.terrainType = terrainType;
+        if (gui.getGameManager() != null && gui.getGameManager().getBackendGrid() != null) {
+            Cell backendCell = gui.getGameManager().getBackendGrid().getCell(row, col);
+            this.variant = (backendCell != null) ? backendCell.getVariant() : 1;
+        }
+        setTerrainImage();
         resetColor();
     }
 
@@ -100,18 +135,14 @@ public class CellUI extends StackPane {
 
     public void setHighlight(boolean isReachable) {
         this.isReachable = isReachable;
-        if (isReachable) {
-            background.setFill(Color.LIGHTGREEN);
-            background.setStroke(Color.DARKGREEN);
-        } else {
-            resetColor();
-        }
+        resetColor();
     }
 
     // Draws path color
     public void setPathHighlight(boolean isPath) {
         if (isPath) {
             background.setFill(Color.YELLOW);
+            background.setOpacity(0.6);
             background.setStroke(Color.ORANGE);
         } else {
             setHighlight(this.isReachable);
@@ -119,23 +150,21 @@ public class CellUI extends StackPane {
     }
 
     private void resetColor() {
-        Color terrainColor;
-        switch (terrainType) {
-            case 1: terrainColor = Color.DARKBLUE; break; // Water
-            case 2: terrainColor = Color.SADDLEBROWN; break; // Woods
-            case 3: terrainColor = Color.BLACK; break; // Wall
-            case 0:
-            default: terrainColor = Color.GREEN; break; // Grass
+        if (isReachable) {
+            background.setFill(Color.LIGHTGREEN);
+            background.setOpacity(0.5);
+            background.setStroke(Color.DARKGREEN);
+            return;
         }
 
         if (unit != null) {
-            // Mix unit color with terrain if unit present
-            Color unitColor = unit.isFriendly() ? Color.LIGHTBLUE : Color.LIGHTCORAL;
-            background.setFill(unitColor.deriveColor(0, 1, 1, 0.7).interpolate(terrainColor, 0.3));
+            background.setFill(unit.isFriendly() ? Color.CYAN : Color.TOMATO);
+            background.setOpacity(0.3);
         } else {
-            background.setFill(terrainColor);
+            background.setFill(Color.TRANSPARENT);
+            background.setOpacity(0);
         }
-        background.setStroke(Color.BLACK);
+        background.setStroke(Color.TRANSPARENT);
     }
 
     public int getRow() {
