@@ -12,7 +12,6 @@ public final class AudioManager {
 
     /**
      * Play looping background music
-     * playBGM("/assets/audio/battle-theme.mp3");
      */
     public static void playBGM(String resourcePath) {
         try {
