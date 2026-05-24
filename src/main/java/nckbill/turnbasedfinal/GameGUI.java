@@ -42,6 +42,7 @@ public class GameGUI extends Application {
     }
     @Override
     public void start(Stage primaryStage) {
+
         rootLayout = new BorderPane();
         gameManager = new GameManager(this, row, column);
         // initialize all boxes (visual on screen)
@@ -58,7 +59,10 @@ public class GameGUI extends Application {
         primaryStage.setTitle("Turn-Based Strategy Game");
         primaryStage.setScene(scene);
         primaryStage.show();
+        playBGM();
     }
+
+
     public void showGameGUI() {
         rootLayout.setTop(topBar);
         rootLayout.setBottom(bottomBar);
@@ -265,6 +269,7 @@ public class GameGUI extends Application {
             returnToMainMenu();
             gameManager.resetGame();
             sideBarUI.clearLog();
+            playBGM();
         });
     }
 
@@ -302,5 +307,9 @@ public class GameGUI extends Application {
 
     public CellUI[][] getGrid() {
         return grid;
+    }
+
+    public void playBGM() {
+        AudioManager.playBGM("/assets/audio/menu-theme.mp3");
     }
 }
