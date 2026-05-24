@@ -119,9 +119,12 @@ public class GameManager {
     }
 
     public void handleAction(Unit currentUnit, Unit target, Action action) {
-        if (target == null) {
+        if (currentUnit == null || currentUnit.getHP() <= 0)
             return;
-        }
+
+        if (target == null || target.getHP() <= 0)
+            return;
+
 
         Cell attackerCell = getBackendGrid().getCell(currentUnit);
         Cell targetCell = getBackendGrid().getCell(target);

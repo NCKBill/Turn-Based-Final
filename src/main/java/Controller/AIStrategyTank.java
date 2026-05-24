@@ -68,9 +68,6 @@ public class AIStrategyTank implements AIStrategy {
                             gm.getGUI().logMessage(action.setLogAction(currentUnit, neighbor.getUnit()));
                             return;
                         }
-//                    else {
-//                            gm.getGUI().logMessage(action.getLogMessage());
-//                        }
                 }
             }
         }

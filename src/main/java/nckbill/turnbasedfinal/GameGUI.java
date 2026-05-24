@@ -212,6 +212,11 @@ public class GameGUI extends Application {
         }
 
         timeline.setOnFinished(event -> {
+            if (currentUnit == null || currentUnit.getHP() <= 0) {
+                System.out.println("Animation cancelled: Unit is dead.");
+                return;
+            }
+
             System.out.println(currentUnit.getName() + " finished moving.");
 
             if (onCompleted != null) {
