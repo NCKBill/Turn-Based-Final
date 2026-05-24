@@ -1,6 +1,6 @@
 ﻿# ⚔ GloriousBattle
 
-![GloriousBattle README](src/main/resources/assests/gloriousbattle_readme.png)
+![GloriousBattle README](src/main/resources/assets/gloriousbattle_readme.png)
 
 > A fully offline turn-based strategy game built with Java 21 + JavaFX. Choose your character, pick a map, and battle AI opponents on a 10×10 grid.
 
