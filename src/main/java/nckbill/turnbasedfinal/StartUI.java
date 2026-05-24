@@ -57,7 +57,7 @@ public class StartUI extends VBox {
             Button mapBtn = new Button();
             mapBtn.setGraphic(thumb);
             mapBtn.setStyle("-fx-background-color: transparent; -fx-border-color: #7f8c8d; -fx-border-width: 3px; -fx-padding: 0;");
-            
+
             mapButtons[i] = mapBtn;
 
             mapBtn.setOnAction(e -> {
@@ -124,19 +124,80 @@ public class StartUI extends VBox {
     // Create selection boxes (button) to choose 1 of 4 classes:
     // Tank, Mage, Healer, Rogue
     private HBox createSelectionBox() {
-        HBox selectionBox = new HBox(15);
+        HBox selectionBox = new HBox(20);
         selectionBox.setAlignment(Pos.CENTER);
 
         String[] classes = {"Tank", "Mage", "Healer", "Rogue"};
-        for (String className : classes) {
-            Button classBtn = new Button(className);
-            classBtn.setPrefSize(100, 40);
+        Button[] classButtons = new Button[classes.length];
+
+        for (int i = 0; i < classes.length; i++) {
+            String className = classes[i];
+
+            Label nameLabel = new Label(className);
+            nameLabel.setStyle("""
+                        -fx-text-fill: white;
+                        -fx-font-size: 18px;
+                        -fx-font-weight: bold;
+                    """);
+
+            String imagePath = "/assets/units/ally-" + className.toLowerCase() + ".png";
+
+            javafx.scene.image.ImageView portrait =
+                    new javafx.scene.image.ImageView(
+                            ImageCache.getImage(imagePath)
+                    );
+
+            portrait.setFitWidth(80);
+            portrait.setFitHeight(80);
+            portrait.setPreserveRatio(true);
+
+            VBox content = new VBox(8);
+            content.setAlignment(Pos.CENTER);
+            content.getChildren().addAll(nameLabel, portrait);
+
+            Button classBtn = new Button();
+            classBtn.setGraphic(content);
+
+            classBtn.setStyle("""
+                        -fx-background-color: transparent;
+                        -fx-border-color: #7f8c8d;
+                        -fx-border-width: 3px;
+                        -fx-padding: 8;
+                    """);
+
+            classButtons[i] = classBtn;
+
             classBtn.setOnAction(e -> {
                 selectedClass = className;
+
+                for (Button btn : classButtons) {
+                    btn.setStyle("""
+                                -fx-background-color: transparent;
+                                -fx-border-color: #7f8c8d;
+                                -fx-border-width: 3px;
+                                -fx-padding: 8;
+                            """);
+                }
+
+                classBtn.setStyle("""
+                            -fx-background-color: transparent;
+                            -fx-border-color: white;
+                            -fx-border-width: 3px;
+                            -fx-padding: 8;
+                        """);
+
                 System.out.println("Selected: " + className);
             });
+
             selectionBox.getChildren().add(classBtn);
         }
+
+        classButtons[0].setStyle("""
+                    -fx-background-color: transparent;
+                    -fx-border-color: white;
+                    -fx-border-width: 3px;
+                    -fx-padding: 8;
+                """);
 
         return selectionBox;
     }
