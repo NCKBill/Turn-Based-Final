@@ -1,5 +1,7 @@
 package nckbill.turnbasedfinal;
 
+import java.util.List;
+
 import Action.Action;
 import Board.Cell;
 import Controller.GameManager;
@@ -15,8 +17,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
-import java.util.List;
 
 public class GameGUI extends Application {
     private BorderPane rootLayout;
@@ -56,7 +56,7 @@ public class GameGUI extends Application {
         initializeGrid();
         // Start the game
         Scene scene = new Scene(rootLayout, 1000, 800);
-        primaryStage.setTitle("Turn-Based Strategy Game");
+        primaryStage.setTitle("Glorious Battle");
         primaryStage.setScene(scene);
         primaryStage.show();
         playBGM();
