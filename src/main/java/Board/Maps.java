@@ -2,8 +2,8 @@ package Board;
 
 public class Maps {
     private final int[][] map;
-    
-    Maps(int n, int rows, int columns) {
+
+    Maps(int n) {
         // Contains 4 preset maps storing terrain type in integer lists.
         switch (n) {
             // Complete grass map.

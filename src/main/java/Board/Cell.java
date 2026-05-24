@@ -54,11 +54,31 @@ public class Cell {
         int cost = 0;
         switch (this.terrainType) {
             case 0: cost = 1; break;
-            case 1: cost = 2; break;
-            case 2: cost = 2; break;
+            case 1, 2:
+                cost = 2;
+                break;
             case 3: cost = Integer.MAX_VALUE; break;
         }
 
         return cost;
+    }
+
+    public String getName() {
+        return switch (this.terrainType) {
+            case 0 -> "Grass";
+            case 1 -> "Water";
+            case 2 -> "Trees";
+            default -> "Mountain";
+        };
+    }
+
+    public String getStringCost() {
+        if (this.terrainType == 3)
+            return "Impassable.";
+        return "Cost to traverse: " + this.getTerrainCost();
+    }
+
+    public String getStringLocation() {
+        return "[" + getRow() + " , " + getCol() + "]";
     }
 }

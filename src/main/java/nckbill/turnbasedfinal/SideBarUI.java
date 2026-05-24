@@ -10,10 +10,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
 public class SideBarUI extends BorderPane {
-    private final Label unitStatsLabel;
-    private final Label actionStatsLabel;
+    private Label unitStatsLabel;
+    private Label cellInfoLabel;
+    private Label actionStatsLabel;
     private Label logLabel;
     private VBox logMessageContainer;
+    private VBox actionStatsContainer;
+    private VBox unitStatsContainer;
     private ScrollPane logPane;
 
     public SideBarUI() {
@@ -22,30 +25,43 @@ public class SideBarUI extends BorderPane {
         this.setWidth(350);
         this.setMinWidth(300);
 
-        // Top Section Container
-        VBox unitStatsContainer = new VBox(15);
-        VBox actionStatsContainer = new VBox(5);
+        setUpContainers();
+        // Set up the scrolling log box
+        setupLogContainer();
+    }
 
+    private void setUpContainers() {
+        // Top Section Container
+        unitStatsContainer = new VBox(5);
+        actionStatsContainer = new VBox(5);
+
+        // Label for unit stats
         Label unitStatsTitle = new Label("Unit Stats:");
         unitStatsTitle.setStyle("-fx-font-weight: bold;");
 
         unitStatsLabel = new Label("Hover over a unit to see stats:");
         unitStatsLabel.setWrapText(true);
 
+        // Label for terrains
+        Label cellInfoTitle = new Label("Terrain Information:");
+        cellInfoTitle.setStyle("-fx-font-weight: bold;");
+
+        cellInfoLabel = new Label("Hover a cell to see information:");
+        cellInfoLabel.setWrapText(true);
+
+        // Label for actions
         Label actionStatsTitle = new Label("Action Stats:");
         actionStatsTitle.setStyle("-fx-font-weight: bold;");
 
         actionStatsLabel = new Label("Select a skill to see stats:");
-        unitStatsLabel.setWrapText(true);
+        actionStatsLabel.setWrapText(true);
 
-        unitStatsContainer.getChildren().addAll(unitStatsTitle, unitStatsLabel, actionStatsTitle, actionStatsLabel);
+        unitStatsContainer.getChildren().addAll(unitStatsTitle, unitStatsLabel, cellInfoTitle, cellInfoLabel);
+        actionStatsContainer.getChildren().addAll(actionStatsTitle, actionStatsLabel);
 
         this.setTop(unitStatsContainer);
-
-        // Set up the scrolling log box
-        setupLogContainer();
+        this.setCenter(actionStatsContainer);
     }
-
     public void updateSidebarUnitStats(Unit unit) {
         if (unit != null) {
             unitStatsLabel.setText(unit.toString());
@@ -87,6 +103,8 @@ public class SideBarUI extends BorderPane {
     public void clearLog() {
         Platform.runLater(() -> {
             logMessageContainer.getChildren().clear();
+            unitStatsLabel.setText("");
+            cellInfoLabel.setText("");
         });
     }
     /**
@@ -100,5 +118,9 @@ public class SideBarUI extends BorderPane {
 
             logMessageContainer.getChildren().add(logLabel);
         });
+    }
+
+    public Label getCellInfoLabel() {
+        return cellInfoLabel;
     }
 }

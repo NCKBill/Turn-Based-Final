@@ -10,22 +10,29 @@ public class Grid {
     private final int columns;
     private final int[][] direction = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    public Grid(int rows, int columns) {
-        this(rows, columns, new Random().nextInt(4));
-    }
 
-    public Grid(int rows, int columns, int mapIndex) {
+    public Grid(int rows, int columns) {
         this.rows = rows;
         this.columns = columns;
         this.grid = new Cell[rows][columns];
-        initializeGrid(mapIndex);
     }
 
-    private void initializeGrid(int mapIndex) {
-        Maps map = new Maps(mapIndex, this.rows, this.columns);
+    public void loadMap(int mapIndex) {
+        Maps map = new Maps(mapIndex);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 grid[i][j] = new Cell(i, j, map.getMap()[i][j]);
+            }
+        }
+    }
+
+    private void initializeGrid(int mapIndex) {
+        Maps map = new Maps(mapIndex);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < columns; c++) {
+                int terrainID = map.getMap()[r][c];
+                grid[r][c] = new Cell(r, c, terrainID);
+
             }
         }
     }
@@ -103,6 +110,7 @@ public class Grid {
                     if (gridNeighbor.isOccupied() && !gridNeighbor.equals(end)) continue;
                     
                     int moveCost = gridNeighbor.getTerrainCost();
+
                     // Prevent entering impassable terrain (Wall)
                     if (moveCost == Integer.MAX_VALUE) continue;
 

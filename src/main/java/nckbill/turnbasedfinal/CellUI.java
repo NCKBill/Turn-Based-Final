@@ -18,7 +18,8 @@ public class CellUI extends StackPane {
     private Rectangle background;
     private ImageView terrainImageView;
     private Label unitIcon;
-    private Label sideStatsLabel;
+    private Label sideUnitStatLabel;
+    private Label sideTerrainLabel;
     private boolean isReachable = false;
     private GameGUI gui;
 
@@ -29,13 +30,16 @@ public class CellUI extends StackPane {
     private int terrainType = 0; // 0: Grass, 1: Water, 2: Woods, 3: Wall
     private int variant = 1;
 
-    public CellUI(int row, int col, int terrainType, Label sideStatsLabel, GameGUI gui) {
+    public CellUI(int row, int col, int terrainType, Label sideUnitStatLabel, Label sideTerrainLabel, GameGUI gui) {
         this.row = row;
         this.col = col;
         this.terrainType = terrainType;
-        this.sideStatsLabel = sideStatsLabel;
+        this.sideTerrainLabel = sideTerrainLabel;
+        this.sideUnitStatLabel = sideUnitStatLabel;
         this.gui = gui;
-
+        this.setPrefSize(CELL_SIZE, CELL_SIZE);
+        this.setMinSize(CELL_SIZE, CELL_SIZE);
+        this.setMaxSize(CELL_SIZE, CELL_SIZE);
         // Try to fetch variant from backend if possible
         if (gui.getGameManager() != null && gui.getGameManager().getBackendGrid() != null) {
             Cell backendCell = gui.getGameManager().getBackendGrid().getCell(row, col);
@@ -82,7 +86,6 @@ public class CellUI extends StackPane {
             case 1: type = "water"; break;
             case 2: type = "tree"; break;
             case 3: type = "mountain"; break;
-            case 0:
             default: type = "grass"; break;
         }
         String path = "/assets/terrains/" + type + "-" + variant + ".png";
@@ -185,11 +188,21 @@ public class CellUI extends StackPane {
 
     private void setupHoverEvents() {
         this.setOnMouseEntered(event -> {
+            Cell cell = gui.getGameManager()
+                    .getBackendGrid()
+                    .getCell(row, col);
+
+            if (cell == null) return;
+
             if (unit != null) {
-                sideStatsLabel.setText(unit.toString());
+                sideUnitStatLabel.setText(unit.toString());
                 background.setStroke(unit.isFriendly() ? Color.BLUE : Color.RED);
             } else {
-                sideStatsLabel.setText("Empty Terrain:\n[" + row + ", " + col + "]");
+                sideTerrainLabel.setText(
+                        cell.getName() + ": " +
+                                cell.getStringCost() + " at " +
+                                cell.getStringLocation()
+                );
                 background.setStroke(Color.GREEN);
             }
 
@@ -201,7 +214,7 @@ public class CellUI extends StackPane {
             Unit lockedUnit = gui.getSelectedViewUnit();
 
             if (lockedUnit != null) {
-                sideStatsLabel.setText(lockedUnit.toString());
+                sideUnitStatLabel.setText(lockedUnit.toString());
             }
 
             gui.clearPathHighlight();

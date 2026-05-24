@@ -208,9 +208,11 @@ public class GameManager {
         processNextTurn();
     }
 
-    public void resetGame(int mapIndex) {
-        backendGrid = new Grid(backendGrid.getRows(), backendGrid.getColumns(), mapIndex);
+    public void resetGame() {
+        backendGrid = new Grid(backendGrid.getRows(), backendGrid.getColumns());
+        gui.initializeGrid();
         turnManager = new TurnManager(this);
+
         this.allyCountCurrent = 0;
         this.enemiesCountCurrent = 0;
         this.selectedAction = null;

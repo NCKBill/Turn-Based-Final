@@ -88,7 +88,8 @@ public class StartUI extends VBox {
         // enemy team is random
         this.getStartButton().setOnAction(event -> {
             String choice = this.getSelectedClass();
-            gui.getGameManager().resetGame(selectedMap);
+            gui.getGameManager().resetGame();
+            gui.getGameManager().getBackendGrid().loadMap(selectedMap);
             transitionToGame();
 
             UnitGenerator unitGenerator = new UnitGenerator();
@@ -98,7 +99,9 @@ public class StartUI extends VBox {
         });
         // start game with 4 random units
         this.getStartButtonAI().setOnAction(e -> {
-            gui.getGameManager().resetGame(selectedMap);
+            gui.getGameManager().resetGame();
+            gui.getGameManager().getBackendGrid().loadMap(selectedMap);
+
             transitionToGame();
 
             UnitGenerator unitGenerator = new UnitGenerator();

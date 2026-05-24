@@ -81,7 +81,7 @@ public class GameGUI extends Application {
     }
 
     // Method to initialize grid
-    private void initializeGrid() {
+    public void initializeGrid() {
         interactiveGrid = new GridPane();
         interactiveGrid.setStyle("-fx-background-color: #ffffff; -fx-alignment: center;");
 
@@ -97,7 +97,7 @@ public class GameGUI extends Application {
                 Cell currentCell = gameManager.getBackendGrid().getCell(finalRow, finalCol);
                 int terrainType = (currentCell != null) ? currentCell.getTerrainType() : 0;
 
-                CellUI visualCell = new CellUI(finalRow, finalCol, terrainType, sideBarUI.getUnitStatsLabel(), this);
+                CellUI visualCell = new CellUI(finalRow, finalCol, terrainType, sideBarUI.getUnitStatsLabel(), sideBarUI.getCellInfoLabel(), this);
                 grid[r][c] = visualCell;
                 if (currentCell != null && currentCell.getUnit() != null) {
                     visualCell.setUnit(currentCell.getUnit());
@@ -263,7 +263,7 @@ public class GameGUI extends Application {
         Platform.runLater(() -> {
             interactiveGrid.setDisable(true);
             returnToMainMenu();
-            gameManager.resetGame(0);
+            gameManager.resetGame();
             sideBarUI.clearLog();
         });
     }
