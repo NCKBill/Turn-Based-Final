@@ -189,7 +189,6 @@ public class GameGUI extends Application {
     }
 
     public void executeMovement(Unit currentUnit, List<Cell> path, Runnable onCompleted) {
-        interactiveGrid.setMouseTransparent(true);
         Timeline timeline = new Timeline();
         int delay = 300;
 
@@ -226,12 +225,9 @@ public class GameGUI extends Application {
             if (onCompleted != null) {
                 javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(Duration.millis(500));
                 pause.setOnFinished(e -> {
-                    interactiveGrid.setMouseTransparent(false);
                     onCompleted.run();
                 });
                 pause.play();
-            } else {
-                interactiveGrid.setMouseTransparent(false);
             }
         });
 

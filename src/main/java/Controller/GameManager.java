@@ -71,16 +71,11 @@ public class GameManager {
         javafx.application.Platform.runLater(() -> {
             gui.updateTurnDisplay(currentUnit);
             gui.logMessage(currentUnit.getName() + "'s Turn.");
-
-            // prevent player's input during AI's turn
-            gui.getInteractiveGrid().setMouseTransparent(true);
         });
 
         PauseTransition pause = new PauseTransition(Duration.seconds(1));
 
         pause.setOnFinished(event -> {
-            gui.getInteractiveGrid().setMouseTransparent(false);
-
             currentUnit.performAction();
         });
 
@@ -97,9 +92,14 @@ public class GameManager {
      */
     public void handleCellClick(int row, int col) {
         Unit activeUnit = turnManager.getActiveUnit();
+
+        // Ignore clicks during AI turn
+        if (activeUnit != null && !activeUnit.isFriendly()) {
+            return;
+        }
+
         Cell clickedCell = backendGrid.getCell(row, col);
 
-        // Allow players to view stats by clicking a unit
         if (clickedCell != null && clickedCell.getUnit() != null && selectedAction == null) {
             selectedViewUnit = clickedCell.getUnit();
             gui.updateSidebarUnitStats(selectedViewUnit);
@@ -220,6 +220,7 @@ public class GameManager {
 
         gui.refreshVisualGrid();
     }
+
 
     public Grid getBackendGrid() {
         return backendGrid;
