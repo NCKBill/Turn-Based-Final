@@ -8,12 +8,10 @@ public final class AudioManager {
     private static MediaPlayer bgMusicPlayer;
 
     private AudioManager() {
-        // Utility class
     }
 
     /**
      * Play looping background music
-     * Example:
      * playBGM("/assets/audio/battle-theme.mp3");
      */
     public static void playBGM(String resourcePath) {
