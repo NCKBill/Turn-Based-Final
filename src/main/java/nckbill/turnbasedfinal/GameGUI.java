@@ -77,7 +77,8 @@ public class GameGUI extends Application {
         rootLayout.setBottom(null);
         rootLayout.setRight(null);
     }
-    // Method to return to start menu after game end (win/loss)
+
+    // Return to start menu after game end (win/loss)
     private void returnToMainMenu() {
         javafx.application.Platform.runLater(() -> {
             hideGameGUI();
@@ -276,7 +277,6 @@ public class GameGUI extends Application {
         pause.play();
     }
 
-    //  disable input after game over
     public void showGameOver(String message) {
         Platform.runLater(() -> {
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
