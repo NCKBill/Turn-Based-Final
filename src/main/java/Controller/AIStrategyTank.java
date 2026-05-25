@@ -3,7 +3,6 @@ package Controller;
 import Action.Action;
 import Board.Cell;
 import Unit.Unit;
-import nckbill.turnbasedfinal.GameGUI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,17 +13,15 @@ public class AIStrategyTank implements AIStrategy {
         List<Cell> pathToTarget = findBestPathToTarget(self, allUnits, gm);
 
         Runnable postMovementAction = () -> {
-            // Check if already attack
             boolean attacked = attackAdjacentEnemies(self, gm);
 
             if (attacked) {
-                // Delay before ending turn
-                gm.getGUI().delayExecution(1 / GameGUI.gameSpeed, () -> {
-                    gm.getTurnManager().endCurrentTurn();
-                    gm.processNextTurn();
+                gm.getGUI().delayExecution(1 / nckbill.turnbasedfinal.GameGUI.gameSpeed, () -> {
+                    executeTurn(self, allUnits, gm);
                 });
             } else {
-                // If no attack, end turn
+                // Out of AP or no enemies
+                // End turn
                 gm.getTurnManager().endCurrentTurn();
                 gm.processNextTurn();
             }
