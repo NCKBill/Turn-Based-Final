@@ -11,6 +11,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import nckbill.turnbasedfinal.GameGUI;
 import nckbill.turnbasedfinal.utils.ImageCache;
 
 public class UnitUI extends VBox {
@@ -46,7 +47,7 @@ public class UnitUI extends VBox {
 
         String hpBarColor = "blue";
         if (unit.isFriendly())
-            hpBarColor = unit.getUnitController().getClass().getSimpleName().equals("PlayerController") ? "#f900d4" : "blue";
+            hpBarColor = unit.getUnitController().getClass().getSimpleName().equals("PlayerController") ? "green" : "blue";
         else hpBarColor = "red";
 
         this.hpBar.setStyle(
@@ -78,17 +79,42 @@ public class UnitUI extends VBox {
         return unit;
     }
 
-    public void playAttackAnimation(double deltaX, double deltaY) {
-        TranslateTransition forward = new TranslateTransition(Duration.millis(150), this);
+    public void playAttackAnimation(double deltaX, double deltaY, Runnable onComplete) {
+        this.setTranslateX(0);
+        this.setTranslateY(0);
+
+        double duration = 150 / GameGUI.getGameSpeed();
+        TranslateTransition forward = new TranslateTransition(Duration.millis(duration), this);
         forward.setByX(deltaX);
         forward.setByY(deltaY);
 
-        TranslateTransition back = new TranslateTransition(Duration.millis(150), this);
+        TranslateTransition back = new TranslateTransition(Duration.millis(duration), this);
         back.setByX(-deltaX);
         back.setByY(-deltaY);
 
         SequentialTransition attackAnimation = new SequentialTransition(forward, back);
 
+        attackAnimation.setOnFinished(e -> {
+            this.setTranslateX(0);
+            this.setTranslateY(0);
+            if (onComplete != null) onComplete.run();
+        });
+
         attackAnimation.play();
+
+    }
+
+    // Glowing around unit sprite
+    public void setActiveHighlight(boolean isActive) {
+        if (isActive) {
+            javafx.scene.effect.DropShadow glow = new javafx.scene.effect.DropShadow();
+            // Friendly units glow Yellow, enemies glow Orange
+            glow.setColor(unit.isFriendly() ? javafx.scene.paint.Color.YELLOW : javafx.scene.paint.Color.ORANGE);
+            glow.setRadius(15);
+            glow.setSpread(0.6);
+            this.unitImage.setEffect(glow);
+        } else {
+            this.unitImage.setEffect(null); // Remove glow when turn ends
+        }
     }
 }
