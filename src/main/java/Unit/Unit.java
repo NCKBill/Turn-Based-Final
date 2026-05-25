@@ -189,9 +189,9 @@ public abstract class Unit {
     public String toString() {
         return
             "Name: " + name +
-                    "\nHP: " + HP +
-                    "\nAP: " + AP +
-                    "\nMP: " + MP +
+                    "\nHP: " + HP + " / " + maxHP +
+                    "\nAP: " + AP + " / " + maxAP +
+                    "\nMP: " + MP + " / " + maxMP +
             "\nSTR: " + strength +
             "\nPOW: " + power +
             "\nDEF: " + defense +
