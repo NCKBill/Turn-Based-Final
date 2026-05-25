@@ -85,7 +85,6 @@ public class UnitGenerator {
 
         boolean playerSpawned = false;
         for (String className : classPool) {
-
             Controller controller;
 
             if (className.equalsIgnoreCase(choice) && !playerSpawned) {

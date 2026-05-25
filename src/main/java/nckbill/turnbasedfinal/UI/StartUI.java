@@ -148,7 +148,7 @@ public class StartUI extends VBox {
         Button[] classButtons = new Button[classes.length];
 
         for (int i = 0; i < classes.length; i++) {
-            String className = classes[i].getName();
+            String className = classes[i].getClass().getSimpleName();
 
             Label nameLabel = new Label(className);
             nameLabel.setStyle("""
