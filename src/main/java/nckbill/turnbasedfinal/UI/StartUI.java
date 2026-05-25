@@ -131,8 +131,10 @@ public class StartUI extends VBox {
     }
 
     private void transitionToGame() {
-        AudioManager.playBGM("/assets/audio/battle-theme-" + selectedMap + ".mp3");
-
+        AudioManager.fadeOutBGM(1.0);
+        gui.delayExecution(1.0, () ->
+                AudioManager.playBGM("/assets/audio/battle-theme-" + selectedMap + ".mp3")
+        );
         gui.getRootLayout().setCenter(gui.getInteractiveGrid());
         gui.showGameGUI();
     }

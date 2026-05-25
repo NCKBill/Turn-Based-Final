@@ -1,7 +1,11 @@
 package nckbill.turnbasedfinal.utils;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
 
 import java.util.Objects;
 
@@ -65,6 +69,31 @@ public final class AudioManager {
             bgMusicPlayer.dispose();
             bgMusicPlayer = null;
         }
+    }
+
+    /**
+     * Fade out music over duration in seconds
+     * then stop
+     */
+    public static void fadeOutBGM(double seconds) {
+        if (bgMusicPlayer == null) return;
+
+        MediaPlayer playerToFade = bgMusicPlayer;
+
+        Timeline fadeOut = new Timeline(
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(playerToFade.volumeProperty(), playerToFade.getVolume())),
+                new KeyFrame(Duration.seconds(seconds),
+                        new KeyValue(playerToFade.volumeProperty(), 0.0))
+        );
+
+        fadeOut.setOnFinished(e -> {
+            playerToFade.stop();
+            playerToFade.dispose();
+            if (bgMusicPlayer == playerToFade) bgMusicPlayer = null;
+        });
+
+        fadeOut.play();
     }
 
     /**

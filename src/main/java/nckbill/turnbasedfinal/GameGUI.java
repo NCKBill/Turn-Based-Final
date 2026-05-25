@@ -294,7 +294,8 @@ public class GameGUI extends Application {
             returnToMainMenu();
             gameManager.resetGame();
             sideBarUI.clearLog();
-            playBGM();
+            AudioManager.fadeOutBGM(1.5);
+            delayExecution(1.5, () -> AudioManager.playBGM("/assets/audio/menu-theme.mp3"));
         });
     }
 
