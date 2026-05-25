@@ -1,7 +1,5 @@
 package nckbill.turnbasedfinal;
 
-import java.util.List;
-
 import Action.Action;
 import Board.Cell;
 import Controller.GameManager;
@@ -20,6 +18,8 @@ import javafx.util.Duration;
 import nckbill.turnbasedfinal.UI.*;
 import nckbill.turnbasedfinal.utils.AudioManager;
 
+import java.util.List;
+
 public class GameGUI extends Application {
     private BorderPane rootLayout;
     private GridPane interactiveGrid;
@@ -36,6 +36,7 @@ public class GameGUI extends Application {
         return gameManager != null ? gameManager.getSelectedViewUnit() : null;
     }
 
+    public static double gameSpeed = 0.5;
     public static int row = 10;
     public static int column = 10;
 
@@ -192,7 +193,8 @@ public class GameGUI extends Application {
 
     public void executeMovement(Unit currentUnit, List<Cell> path, Runnable onCompleted) {
         Timeline timeline = new Timeline();
-        int delay = 300;
+        double defaultDelay = 300 / gameSpeed;
+        double delay = defaultDelay;
 
         for (Cell step : path) {
             if (step.getUnit() == currentUnit) continue;
@@ -213,7 +215,7 @@ public class GameGUI extends Application {
             });
 
             timeline.getKeyFrames().add(keyFrame);
-            delay += 300;
+            delay += defaultDelay;
         }
 
         timeline.setOnFinished(event -> {
@@ -247,6 +249,14 @@ public class GameGUI extends Application {
             // Trigger bump animation
             attackerUI.playAttackAnimation(dx, dy);
         }
+    }
+
+    public void delayExecution(double seconds, Runnable onComplete) {
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(seconds));
+        if (onComplete != null) {
+            pause.setOnFinished(e -> onComplete.run());
+        }
+        pause.play();
     }
 
     //  disable input after game over
@@ -309,5 +319,13 @@ public class GameGUI extends Application {
 
     public void playBGM() {
         AudioManager.playBGM("/assets/audio/menu-theme.mp3");
+    }
+
+    public static double getGameSpeed() {
+        return gameSpeed;
+    }
+
+    public static void setGameSpeed(double gameSpeed) {
+        GameGUI.gameSpeed = gameSpeed;
     }
 }

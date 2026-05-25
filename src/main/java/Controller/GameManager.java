@@ -4,8 +4,6 @@ import Action.Action;
 import Board.Cell;
 import Board.Grid;
 import Unit.Unit;
-import javafx.animation.PauseTransition;
-import javafx.util.Duration;
 import nckbill.turnbasedfinal.GameGUI;
 import nckbill.turnbasedfinal.UI.CellUI;
 
@@ -73,13 +71,9 @@ public class GameManager {
             gui.logMessage(currentUnit.getName() + "'s Turn.");
         });
 
-        PauseTransition pause = new PauseTransition(Duration.seconds(1));
-
-        pause.setOnFinished(event -> {
+        gui.delayExecution(1 / GameGUI.getGameSpeed(), () -> {
             currentUnit.performAction();
         });
-
-        pause.play();
     }
 
     public void executeMovement(Unit movingUnit, List<Cell> path, Runnable onComplete) {
