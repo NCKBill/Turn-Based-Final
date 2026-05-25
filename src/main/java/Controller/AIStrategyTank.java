@@ -3,6 +3,7 @@ package Controller;
 import Action.Action;
 import Board.Cell;
 import Unit.Unit;
+import nckbill.turnbasedfinal.GameGUI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,21 +11,50 @@ import java.util.List;
 public class AIStrategyTank implements AIStrategy {
     @Override
     public void executeTurn(Unit self, List<Unit> allUnits, GameManager gm) {
-        // Find the best reachable target
         List<Cell> pathToTarget = findBestPathToTarget(self, allUnits, gm);
 
         Runnable postMovementAction = () -> {
-            attackAdjacentEnemies(self, gm);
-            gm.getTurnManager().endCurrentTurn();
-            gm.processNextTurn();
+            // Check if already attack
+            boolean attacked = attackAdjacentEnemies(self, gm);
+
+            if (attacked) {
+                // Delay before ending turn
+                gm.getGUI().delayExecution(1 / GameGUI.gameSpeed, () -> {
+                    gm.getTurnManager().endCurrentTurn();
+                    gm.processNextTurn();
+                });
+            } else {
+                // If no attack, end turn
+                gm.getTurnManager().endCurrentTurn();
+                gm.processNextTurn();
+            }
         };
 
-        // Move or execute immediate attack if already in range
         if (!pathToTarget.isEmpty()) {
             gm.executeMovement(self, pathToTarget, postMovementAction);
         } else {
             postMovementAction.run();
         }
+    }
+
+    private boolean attackAdjacentEnemies(Unit currentUnit, GameManager gm) {
+        Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
+        int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+        for (int[] dir : directions) {
+            Cell neighbor = gm.getBackendGrid().getCell(currentCell.getRow() + dir[0], currentCell.getCol() + dir[1]);
+            if (neighbor != null && neighbor.getUnit() != null && !currentUnit.isTargetFriendly(neighbor.getUnit())) {
+                for (Action action : currentUnit.getAvailableActions()) {
+                    if (action.getType().equals("Damage"))
+                        if (action.canExecute(currentCell, neighbor)) {
+                            gm.handleAction(currentUnit, neighbor.getUnit(), action);
+                            gm.getGUI().logMessage(action.setLogAction(currentUnit, neighbor.getUnit()));
+                            return true;
+                        }
+                }
+            }
+        }
+        return false;
     }
 
     private List<Cell> findBestPathToTarget(Unit self, List<Unit> allUnits, GameManager gm) {
@@ -72,24 +102,5 @@ public class AIStrategyTank implements AIStrategy {
         }
 
         return bestPath.subList(0, validSteps);
-    }
-
-    private void attackAdjacentEnemies(Unit currentUnit, GameManager gm) {
-        Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
-        int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-        for (int[] dir : directions) {
-            Cell neighbor = gm.getBackendGrid().getCell(currentCell.getRow() + dir[0], currentCell.getCol() + dir[1]);
-            if (neighbor != null && neighbor.getUnit() != null && !currentUnit.isTargetFriendly(neighbor.getUnit())) {
-                for (Action action : currentUnit.getAvailableActions()) {
-                    if (action.getType().equals("Damage"))
-                        if (action.canExecute(currentCell, neighbor)) {
-                            gm.handleAction(currentUnit, neighbor.getUnit(), action);
-                            gm.getGUI().logMessage(action.setLogAction(currentUnit, neighbor.getUnit()));
-                            return;
-                        }
-                }
-            }
-        }
     }
 }
