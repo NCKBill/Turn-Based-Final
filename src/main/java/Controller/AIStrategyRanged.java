@@ -12,7 +12,6 @@ public class AIStrategyRanged implements AIStrategy {
 
     @Override
     public void executeTurn(Unit currentUnit, List<Unit> allUnits, GameManager gm) {
-
         // Base Case: Out of AP and MP
         if (currentUnit.getAP() <= 0 && currentUnit.getMP() <= 0) {
             endTurn(gm);
@@ -66,12 +65,12 @@ public class AIStrategyRanged implements AIStrategy {
             return;
         }
 
-        // 4. KITE PHASE (Retreat if enemy is too close)
+        // 4. Kite phase (Retreat if enemy is too close)
         if (dist < SAFE_DISTANCE && currentUnit.getMP() > 0) {
             Cell retreatCell = calculateRetreatCell(selfCell, targetCell, gm);
             if (retreatCell != null) {
                 List<Cell> retreatPath = gm.getBackendGrid().calculatePathDijkstra(selfCell, retreatCell);
-
+                retreatPath = limitPathByMP(retreatPath, currentUnit.getMP());
                 // executeMovement triggers the callback when the walk animation finishes
                 gm.getGUI().executeMovement(currentUnit, retreatPath, () -> {
                     executeTurn(currentUnit, allUnits, gm);
@@ -99,7 +98,7 @@ public class AIStrategyRanged implements AIStrategy {
 
                 if (bestChaseCell != null && bestChaseCell != selfCell) {
                     List<Cell> pathToTake = gm.getBackendGrid().calculatePathDijkstra(selfCell, bestChaseCell);
-
+                    pathToTake = limitPathByMP(pathToTake, currentUnit.getMP());
                     if (pathToTake.size() > 1) {
                         gm.getGUI().executeMovement(currentUnit, pathToTake, () -> {
                             executeTurn(currentUnit, allUnits, gm);
@@ -114,6 +113,8 @@ public class AIStrategyRanged implements AIStrategy {
         endTurn(gm);
     }
 
+    // Iterate through the action list
+    // check if unit has action within range
     private boolean hasActionInRange(Unit currentUnit, Cell targetCell, GameManager gm) {
         List<Action> availableActions = currentUnit.getAvailableActions();
         Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
@@ -138,6 +139,7 @@ public class AIStrategyRanged implements AIStrategy {
                 .orElse(null);
     }
 
+    // Find the best cell away from the enemy within MP limit
     private Cell calculateRetreatCell(Cell currentCell, Cell target, GameManager gm) {
         Grid grid = gm.getBackendGrid();
         Unit unit = currentCell.getUnit();
@@ -163,6 +165,7 @@ public class AIStrategyRanged implements AIStrategy {
         return bestRetreat;
     }
 
+    // Find closest reachable enemy target
     private Unit findClosestEnemy(Unit currentUnit, List<Unit> allUnits, GameManager gm) {
         Unit closest = null;
         double min = Double.MAX_VALUE;
@@ -180,6 +183,7 @@ public class AIStrategyRanged implements AIStrategy {
         return closest;
     }
 
+    // Find closest reachable friendly target
     private Unit findBestFriendlyTarget(Unit currentUnit, Action action, GameManager gm) {
         List<Unit> allies = gm.getTurnManager().getAllActiveUnits().stream()
                 .filter(u -> u.isFriendly() == currentUnit.isFriendly()) // only friendly units
@@ -203,5 +207,24 @@ public class AIStrategyRanged implements AIStrategy {
 
     private double getDistance(Cell a, Cell b) {
         return Math.hypot(a.getCol() - b.getCol(), a.getRow() - b.getRow());
+    }
+
+    // Restrict the Dijkstra path within the remaining MP
+    private List<Cell> limitPathByMP(List<Cell> path, int mpLimit) {
+        if (path == null || path.isEmpty()) return path;
+
+        int accumulatedCost = 0;
+        int validSteps = 1;
+
+        for (int i = 1; i < path.size(); i++) {
+            accumulatedCost += path.get(i).getTerrainCost();
+
+            if (accumulatedCost <= mpLimit) {
+                validSteps++;
+            } else {
+                break;
+            }
+        }
+        return path.subList(0, validSteps);
     }
 }
