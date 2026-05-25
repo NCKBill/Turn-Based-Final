@@ -19,7 +19,7 @@ public class AIStrategyRanged implements AIStrategy {
             return;
         }
 
-        // 1. SUPPORT PHASE
+        // 1. Support Phase
         Action supportAction = findSupportAction(currentUnit);
         if (supportAction != null && currentUnit.getAP() >= supportAction.getApCost()) {
             Unit bestFriendlyTarget = findBestFriendlyTarget(currentUnit, supportAction, gm);
@@ -30,13 +30,13 @@ public class AIStrategyRanged implements AIStrategy {
                 gm.handleAction(currentUnit, targetCell.getUnit(), supportAction);
                 gm.getGUI().logMessage(supportAction.setLogAction(currentUnit, targetCell.getUnit()));
 
-                // Delay to let animation play, then recursively call executeTurn again
+                // Delay to let animation play
                 gm.getGUI().delayExecution(1 / nckbill.turnbasedfinal.GameGUI.getGameSpeed(), () -> executeTurn(currentUnit, allUnits, gm));
                 return;
             }
         }
 
-        // 2. IDENTIFY TARGET
+        // 2. Identify Target
         Unit target = findClosestEnemy(currentUnit, allUnits, gm);
         if (target == null) {
             endTurn(gm);
@@ -47,7 +47,7 @@ public class AIStrategyRanged implements AIStrategy {
         Cell targetCell = gm.getBackendGrid().getCell(target);
         double dist = getDistance(selfCell, targetCell);
 
-        // 3. ATTACK PHASE
+        // 3. Attack Phase
         boolean attackedThisCycle = false;
         for (Action action : currentUnit.getAvailableActions()) {
             if (action.getType().equals("Damage")) {
@@ -61,7 +61,7 @@ public class AIStrategyRanged implements AIStrategy {
         }
 
         if (attackedThisCycle) {
-            // Delay to let attack animation play, then recursively call executeTurn again
+            // Delay to let attack animation play
             gm.getGUI().delayExecution(1 / nckbill.turnbasedfinal.GameGUI.getGameSpeed(), () -> executeTurn(currentUnit, allUnits, gm));
             return;
         }
@@ -80,7 +80,7 @@ public class AIStrategyRanged implements AIStrategy {
             }
         }
 
-        // 5. MOVEMENT PHASE (Chase if out of range)
+        // 5. Movement (Chase if out of range)
         if (!hasActionInRange(currentUnit, targetCell, gm)) {
             if (currentUnit.getMP() > 0) {
 
@@ -88,7 +88,6 @@ public class AIStrategyRanged implements AIStrategy {
                 Cell bestChaseCell = null;
                 double minTargetDist = Double.MAX_VALUE;
 
-                // Find a cell that gets us close, but maintains a 3-tile distance
                 for (Cell candidate : reachable) {
                     double distToTarget = getDistance(candidate, targetCell);
 
@@ -111,24 +110,9 @@ public class AIStrategyRanged implements AIStrategy {
             }
         }
 
-        // 6. END TURN (Fall-through if no actions or moves were possible)
+        // 6. End turn if no action/move is possible
         endTurn(gm);
     }
-
-    private void performAttack(Unit currentUnit, Unit target, GameManager gm) {
-        for (Action action : currentUnit.getAvailableActions()) {
-            if (action.getType().equals("Damage")) {
-                gm.handleAction(currentUnit, target, action);
-
-                gm.getGUI().logMessage(action.setLogAction(currentUnit, target));
-                break;
-            }
-        }
-    }
-
-//    private void logFailedAction(GameManager gm, Action action) {
-//        gm.getGUI().logMessage(action.getLogMessage());
-//    }
 
     private boolean hasActionInRange(Unit currentUnit, Cell targetCell, GameManager gm) {
         List<Action> availableActions = currentUnit.getAvailableActions();
