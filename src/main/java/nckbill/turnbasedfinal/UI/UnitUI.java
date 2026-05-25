@@ -43,11 +43,18 @@ public class UnitUI extends VBox {
         this.hpBar = new ProgressBar();
         this.hpBar.setPrefWidth(50);
         this.hpBar.setPrefHeight(10);
+
+        String hpBarColor = "blue";
+        if (unit.isFriendly())
+            hpBarColor = unit.getUnitController().getClass().getSimpleName().equals("PlayerController") ? "#f900d4" : "blue";
+        else hpBarColor = "red";
+
         this.hpBar.setStyle(
-                "-fx-accent: red; " +
+                "-fx-accent: " + hpBarColor + "; " +
                         "-fx-control-inner-background: transparent; " +
                         "-fx-box-border: transparent; " +
-                        "-fx-background-color: black; " +
+                        "-fx-background-color: transparent; " +
+                        "-fx-background-insets: 0; " +
                         "-fx-padding: 0;"
         );
         // HP text
