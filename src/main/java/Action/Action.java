@@ -35,7 +35,8 @@ public abstract class Action {
         int x = target.getCol() - start.getCol();
         int y = target.getRow() - start.getRow();
         double delta = Math.pow(x, 2) + Math.pow(y, 2);
-        int range = (int) Math.sqrt(delta);
+        double range = Math.sqrt(delta);
+
         return this.range >= range;
     }
 
