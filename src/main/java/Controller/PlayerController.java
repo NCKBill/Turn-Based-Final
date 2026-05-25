@@ -1,10 +1,10 @@
 package Controller;
 
-import java.util.List;
-
 import Action.Action;
 import Board.Cell;
 import Unit.Unit;
+
+import java.util.List;
 
 public class PlayerController implements Controller {
     private GameManager gameManager; // Reference to the central game manager that coordinates all game logic
@@ -45,7 +45,8 @@ public class PlayerController implements Controller {
                     List<Cell> fullPath = gameManager.getBackendGrid().calculatePathDijkstra(startCell, clickedCell);
 
                     gameManager.getGUI().clearPathHighlight();                        // Remove any movement preview highlight from the board
-                    gameManager.executeMovement(selectedViewUnit, fullPath, null);    // Move the unit along the computed path
+                    gameManager.executeMovement(selectedViewUnit, fullPath, () -> {
+                    });    // Move the unit along the computed path
                 } else {
                     System.out.println("Invalid movement: Target out of range.");
                 }
@@ -60,7 +61,8 @@ public class PlayerController implements Controller {
                 // (validates range, line of sight, or any other action-specific rules)
                 if (selectedAction.canExecute(gameManager.getBackendGrid().getCell(activeUnit), clickedCell)) {
                     // Valid target — execute the action (e.g. deal damage, apply heal) and log what happened
-                    gameManager.handleAction(activeUnit, clickedCell.getUnit(), selectedAction);
+                    gameManager.handleAction(activeUnit, clickedCell.getUnit(), selectedAction, () -> {
+                    });
                     gameManager.getGUI().logMessage(selectedAction.setLogAction(activeUnit, clickedCell.getUnit()));
                 } else {
                     // Invalid target — show the action's built-in error/reason message in the log
