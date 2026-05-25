@@ -83,25 +83,21 @@ public abstract class Action {
         Unit unit = start.getUnit();
         boolean canExecute = true;
         if (unit.getAP() < this.getApCost()) {
-            System.out.println(this.getName() + ": Not enough AP.");
             logMessage += this.getName() + ": Not enough AP.";
             canExecute = false;
         }
 
         if (!isInRange(start, target)) {
-            System.out.println(this.getName() + ": Not in range.");
             logMessage += this.getName() + ": Not in range.";
             canExecute = false;
         }
 
         if (!this.targetFriendly && unit.isTargetFriendly(target.getUnit())) {
-            System.out.println(this.getName() + ": Cannot damage allies.");
             logMessage += this.getName() + ": Cannot damage allies.";
             canExecute = false;
         }
 
         if (this.targetFriendly && !unit.isTargetFriendly(target.getUnit())) {
-            System.out.println(this.getName() + ": Cannot buff enemies.");
             logMessage += this.getName() + ": Cannot buff enemies.";
             canExecute = false;
         }
@@ -114,6 +110,10 @@ public abstract class Action {
 
     public void setValueOnTarget(int valueOfAction) {
         this.valueOnTarget = valueOfAction;
+    }
+
+    public int getRange() {
+        return range;
     }
 
     @Override
