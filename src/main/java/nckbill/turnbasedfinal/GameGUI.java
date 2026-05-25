@@ -135,13 +135,20 @@ public class GameGUI extends Application {
 
     public void refreshVisualGrid() {
         for (Node node : interactiveGrid.getChildren()) {
+            Unit activeUnit = gameManager.getTurnManager().getActiveUnit();
             if (node instanceof CellUI visualCell) {
                 Cell currentCell = gameManager.getBackendGrid().getCell(visualCell.getRow(), visualCell.getCol());
                 if (currentCell != null) {
                     visualCell.setTerrainType(currentCell.getTerrainType());
                     visualCell.setUnit(currentCell.getUnit());
+
+                    if (visualCell.getUnitUI() != null) {
+                        boolean isActive = (currentCell.getUnit() == activeUnit);
+                        visualCell.getUnitUI().setActiveHighlight(isActive);
+                    }
                 }
             }
+
         }
     }
 
@@ -160,11 +167,11 @@ public class GameGUI extends Application {
                     int remainingMP = selected.getMP();
                     // Skip start cell in path if it is included
                     int startIndex = (fullPath.get(0).equals(startCell)) ? 1 : 0;
-                    
+
                     for (int i = startIndex; i < fullPath.size(); i++) {
                         Cell step = fullPath.get(i);
                         int cost = step.getTerrainCost();
-                        
+
                         if (remainingMP >= cost) {
                             remainingMP -= cost;
                             for (Node node : interactiveGrid.getChildren()) {
@@ -195,6 +202,7 @@ public class GameGUI extends Application {
         Timeline timeline = new Timeline();
         double defaultDelay = 300 / gameSpeed;
         double delay = defaultDelay;
+        int[] stepsAdded = {0};
 
         for (Cell step : path) {
             if (step.getUnit() == currentUnit) continue;
@@ -216,6 +224,7 @@ public class GameGUI extends Application {
 
             timeline.getKeyFrames().add(keyFrame);
             delay += defaultDelay;
+            stepsAdded[0]++;
         }
 
         timeline.setOnFinished(event -> {
@@ -227,27 +236,35 @@ public class GameGUI extends Application {
             System.out.println(currentUnit.getName() + " finished moving.");
 
             if (onCompleted != null) {
-                javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(Duration.millis(500));
-                pause.setOnFinished(e -> {
+                if (stepsAdded[0] > 0) {
+                    // Unit actually moved — brief pause so the last step is visible
+                    javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(Duration.millis(500));
+                    pause.setOnFinished(e -> onCompleted.run());
+                    pause.play();
+                } else {
+                    // No movement — run callback immediately with no delay
                     onCompleted.run();
-                });
-                pause.play();
+                }
             }
         });
 
         timeline.play();
     }
 
-    public void executeUnitAnimation(CellUI attackerCell, CellUI targetCell) {
+    public void executeUnitAnimation(CellUI attackerCell, CellUI targetCell, Runnable onAnimationComplete) {
         UnitUI attackerUI = attackerCell.getUnitUI();
 
         if (attackerUI != null) {
-            // Calculate vector pointing toward target
             double dx = (targetCell.getCol() - attackerCell.getCol()) * 25;
             double dy = (targetCell.getRow() - attackerCell.getRow()) * 25;
 
-            // Trigger bump animation
-            attackerUI.playAttackAnimation(dx, dy);
+            // Fire callback only after the bump animation fully completes,
+            // so fast game speeds can't start the next attack mid-animation.
+            attackerUI.playAttackAnimation(dx, dy, onAnimationComplete);
+        } else {
+            if (onAnimationComplete != null) {
+                onAnimationComplete.run();
+            }
         }
     }
 
@@ -286,6 +303,11 @@ public class GameGUI extends Application {
             CellUI visualCell = grid[row][col];
             Cell backendCell = gameManager.getBackendGrid().getCell(row, col);
             visualCell.setUnit(backendCell != null ? backendCell.getUnit() : null);
+
+            if (visualCell.getUnitUI() != null && backendCell != null) {
+                Unit activeUnit = gameManager.getTurnManager().getActiveUnit();
+                visualCell.getUnitUI().setActiveHighlight(backendCell.getUnit() == activeUnit);
+            }
         }
     }
 

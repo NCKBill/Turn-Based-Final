@@ -12,20 +12,7 @@ public class AIStrategyTank implements AIStrategy {
     public void executeTurn(Unit self, List<Unit> allUnits, GameManager gm) {
         List<Cell> pathToTarget = findBestPathToTarget(self, allUnits, gm);
 
-        Runnable postMovementAction = () -> {
-            boolean attacked = attackAdjacentEnemies(self, gm);
-
-            if (attacked) {
-                gm.getGUI().delayExecution(1 / nckbill.turnbasedfinal.GameGUI.gameSpeed, () -> {
-                    executeTurn(self, allUnits, gm);
-                });
-            } else {
-                // Out of AP or no enemies
-                // End turn
-                gm.getTurnManager().endCurrentTurn();
-                gm.processNextTurn();
-            }
-        };
+        Runnable postMovementAction = () -> attackAdjacentEnemies(self, allUnits, gm);
 
         if (!pathToTarget.isEmpty()) {
             gm.executeMovement(self, pathToTarget, postMovementAction);
@@ -34,7 +21,7 @@ public class AIStrategyTank implements AIStrategy {
         }
     }
 
-    private boolean attackAdjacentEnemies(Unit currentUnit, GameManager gm) {
+    private void attackAdjacentEnemies(Unit currentUnit, List<Unit> allUnits, GameManager gm) {
         Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
         int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
@@ -44,14 +31,20 @@ public class AIStrategyTank implements AIStrategy {
                 for (Action action : currentUnit.getAvailableActions()) {
                     if (action.getType().equals("Damage"))
                         if (action.canExecute(currentCell, neighbor)) {
-                            gm.handleAction(currentUnit, neighbor.getUnit(), action);
                             gm.getGUI().logMessage(action.setLogAction(currentUnit, neighbor.getUnit()));
-                            return true;
+                            // Loop continuation is driven by the animation callback,
+                            // matching how ranged handles multi-attack timing.
+                            gm.handleAction(currentUnit, neighbor.getUnit(), action, () ->
+                                    executeTurn(currentUnit, allUnits, gm)
+                            );
+                            return;
                         }
                 }
             }
         }
-        return false;
+        // No adjacent enemy found or out of AP — end turn
+        gm.getTurnManager().endCurrentTurn();
+        gm.processNextTurn();
     }
 
     private List<Cell> findBestPathToTarget(Unit self, List<Unit> allUnits, GameManager gm) {

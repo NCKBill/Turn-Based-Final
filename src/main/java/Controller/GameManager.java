@@ -56,6 +56,7 @@ public class GameManager {
             return;
         }
         Unit activeUnit = turnManager.getActiveUnit();
+
         if (activeUnit == null) {
             turnManager.startNextTurn();
             activeUnit = turnManager.getActiveUnit();
@@ -66,9 +67,17 @@ public class GameManager {
 
         final Unit currentUnit = activeUnit;
 
+        boolean isPlayer = activeUnit.getUnitController().getClass().getSimpleName().equals("PlayerController");
+
         javafx.application.Platform.runLater(() -> {
             gui.updateTurnDisplay(currentUnit);
-            gui.logMessage(currentUnit.getName() + "'s Turn.");
+            if (!isPlayer)
+                gui.logMessage(currentUnit.getName() + "'s Turn.");
+            else {
+                for (int i = 0; i < 5; i++) {
+                    gui.logMessage("IT IS YOUR TURN! TAKE IT RIGHT NOW!!!!!!");
+                }
+            }
         });
 
         gui.delayExecution(1 / GameGUI.getGameSpeed(), () -> {
@@ -112,13 +121,9 @@ public class GameManager {
         gui.updateTurnDisplay(unit);
     }
 
-    public void handleAction(Unit currentUnit, Unit target, Action action) {
-        if (currentUnit == null || currentUnit.getHP() <= 0)
-            return;
-
-        if (target == null || target.getHP() <= 0)
-            return;
-
+    public void handleAction(Unit currentUnit, Unit target, Action action, Runnable onComplete) {
+        if (currentUnit == null || currentUnit.getHP() <= 0) return;
+        if (target == null || target.getHP() <= 0) return;
 
         Cell attackerCell = getBackendGrid().getCell(currentUnit);
         Cell targetCell = getBackendGrid().getCell(target);
@@ -131,6 +136,7 @@ public class GameManager {
             targetCellUI = gui.getGrid()[targetCell.getRow()][targetCell.getCol()];
         }
 
+        // Apply Logic
         int damage = action.execute(currentUnit, targetCell);
 
         if (action.getType().equals("Damage"))
@@ -138,10 +144,14 @@ public class GameManager {
         else
             handleHeal(target, action.getValue() + currentUnit.getPower());
 
+        // Pass the callback to the GUI
         if (attackerCellUI != null && targetCellUI != null) {
-            gui.executeUnitAnimation(attackerCellUI, targetCellUI);
+            gui.executeUnitAnimation(attackerCellUI, targetCellUI, onComplete);
+        } else if (onComplete != null) {
+            onComplete.run(); // Run instantly if there's no UI
         }
     }
+
     // Call when damage is applied
     public void handleDamage(Unit target, int damage) {
         target.setHP(target.getHP() - damage);

@@ -2,129 +2,225 @@ package Controller;
 
 import Action.Action;
 import Board.Cell;
-import Board.Grid;
 import Unit.Unit;
 
 import java.util.List;
 
 public class AIStrategyRanged implements AIStrategy {
-    private static final int SAFE_DISTANCE = 3; // minimum range for skills
 
     @Override
     public void executeTurn(Unit currentUnit, List<Unit> allUnits, GameManager gm) {
-        // Base Case: Out of AP and MP
-        if (currentUnit.getAP() <= 0 && currentUnit.getMP() <= 0) {
-            endTurn(gm);
-            return;
-        }
-
-        // 1. Support Phase
         Action supportAction = findSupportAction(currentUnit);
-        if (supportAction != null && currentUnit.getAP() >= supportAction.getApCost()) {
-            Unit bestFriendlyTarget = findBestFriendlyTarget(currentUnit, supportAction, gm);
+        Unit enemyTarget = findClosestEnemy(currentUnit, allUnits, gm);
+        // If current unit has support action then find support target -> else null
+        Unit supportTarget = supportAction != null ? findBestFriendlyTarget(currentUnit, supportAction, gm) : null;
 
-            if (bestFriendlyTarget != null) {
-                Cell targetCell = gm.getBackendGrid().getCell(bestFriendlyTarget);
-
-                gm.handleAction(currentUnit, targetCell.getUnit(), supportAction);
-                gm.getGUI().logMessage(supportAction.setLogAction(currentUnit, targetCell.getUnit()));
-
-                // Delay to let animation play
-                gm.getGUI().delayExecution(1 / nckbill.turnbasedfinal.GameGUI.getGameSpeed(), () -> executeTurn(currentUnit, allUnits, gm));
-                return;
-            }
-        }
-
-        // 2. Identify Target
-        Unit target = findClosestEnemy(currentUnit, allUnits, gm);
-        if (target == null) {
-            endTurn(gm);
+        // Support if current unit has support target
+        if (supportAction != null && supportTarget != null) {
+            executeSupportTurn(currentUnit, supportTarget, supportAction, allUnits, gm);
             return;
         }
 
-        Cell selfCell = gm.getBackendGrid().getCell(currentUnit);
-        Cell targetCell = gm.getBackendGrid().getCell(target);
-        double dist = getDistance(selfCell, targetCell);
-
-        // 3. Attack Phase
-        boolean attackedThisCycle = false;
-        for (Action action : currentUnit.getAvailableActions()) {
-            if (action.getType().equals("Damage")) {
-                if (action.canExecute(selfCell, targetCell)) {
-                    gm.handleAction(currentUnit, target, action);
-                    gm.getGUI().logMessage(action.setLogAction(currentUnit, target));
-                    attackedThisCycle = true;
-                    break;
-                }
-            }
-        }
-
-        if (attackedThisCycle) {
-            // Delay to let attack animation play
-            gm.getGUI().delayExecution(1 / nckbill.turnbasedfinal.GameGUI.getGameSpeed(), () -> executeTurn(currentUnit, allUnits, gm));
+        // otherwise use damage skill
+        if (enemyTarget != null) {
+            executeAttackTurn(currentUnit, enemyTarget, gm);
             return;
         }
-
-        // 4. Kite phase (Retreat if enemy is too close)
-        if (dist < SAFE_DISTANCE && currentUnit.getMP() > 0) {
-            Cell retreatCell = calculateRetreatCell(selfCell, targetCell, gm);
-            if (retreatCell != null) {
-                List<Cell> retreatPath = gm.getBackendGrid().calculatePathDijkstra(selfCell, retreatCell);
-                retreatPath = limitPathByMP(retreatPath, currentUnit.getMP());
-                // executeMovement triggers the callback when the walk animation finishes
-                gm.getGUI().executeMovement(currentUnit, retreatPath, () -> {
-                    executeTurn(currentUnit, allUnits, gm);
-                });
-                return;
-            }
-        }
-
-        // 5. Movement (Chase if out of range)
-        if (!hasActionInRange(currentUnit, targetCell, gm)) {
-            if (currentUnit.getMP() > 0) {
-
-                List<Cell> reachable = gm.getBackendGrid().getReachableCells(selfCell, currentUnit.getMP());
-                Cell bestChaseCell = null;
-                double minTargetDist = Double.MAX_VALUE;
-
-                for (Cell candidate : reachable) {
-                    double distToTarget = getDistance(candidate, targetCell);
-
-                    if (distToTarget >= SAFE_DISTANCE && distToTarget < minTargetDist) {
-                        minTargetDist = distToTarget;
-                        bestChaseCell = candidate;
-                    }
-                }
-
-                if (bestChaseCell != null && bestChaseCell != selfCell) {
-                    List<Cell> pathToTake = gm.getBackendGrid().calculatePathDijkstra(selfCell, bestChaseCell);
-                    pathToTake = limitPathByMP(pathToTake, currentUnit.getMP());
-                    if (pathToTake.size() > 1) {
-                        gm.getGUI().executeMovement(currentUnit, pathToTake, () -> {
-                            executeTurn(currentUnit, allUnits, gm);
-                        });
-                        return;
-                    }
-                }
-            }
-        }
-
-        // 6. End turn if no action/move is possible
         endTurn(gm);
     }
 
-    // Iterate through the action list
-    // check if unit has action within range
-    private boolean hasActionInRange(Unit currentUnit, Cell targetCell, GameManager gm) {
-        List<Action> availableActions = currentUnit.getAvailableActions();
-        Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
+    private void executeAttackTurn(Unit unit, Unit target, GameManager gm) {
+        Cell selfCell = gm.getBackendGrid().getCell(unit);
+        Cell targetCell = gm.getBackendGrid().getCell(target);
+        Action attackAction = getBestAttackAction(unit);
 
-        for (Action availableAction : availableActions) {
-            if (availableAction.isInRange(currentCell, targetCell)) {
-                return true;
+        // No AP or no valid action — move toward target if possible, then end
+        if (attackAction == null) {
+            if (unit.getMP() > 0) {
+                moveIntoRange(unit, targetCell, 1, gm, () -> endTurn(gm));
+            } else {
+                endTurn(gm);
+            }
+            return;
+        }
+
+        if (attackAction.canExecute(selfCell, targetCell)) {
+            // Already in range — attack now, then loop back to spend remaining AP
+            tryExecutingAttack(unit, target, attackAction, gm);
+        } else if (unit.getMP() > 0) {
+            // Out of range — move in, then attack with whatever AP remains
+            moveIntoRange(unit, targetCell, attackAction.getRange(), gm,
+                    () -> tryExecutingAttack(unit, target, attackAction, gm));
+        } else {
+            endTurn(gm);
+        }
+    }
+
+    // Attack the target if still in range and AP allows; reposition when AP is spent
+    private void tryExecutingAttack(Unit unit, Unit target, Action attackAction, GameManager gm) {
+        Cell currentCell = gm.getBackendGrid().getCell(unit);
+        Cell targetCell = gm.getBackendGrid().getCell(target);
+
+        // Target may have died
+        if (target == null || target.getHP() <= 0) {
+            repositionAfterAction(unit, currentCell, gm);
+            return;
+        }
+
+        // Re-fetch best action in case AP changed between recursive calls
+        Action nextAction = getBestAttackAction(unit);
+        if (nextAction == null) {
+            // Out of AP: reposition and end turn
+            repositionAfterAction(unit, targetCell, gm);
+            return;
+        }
+
+        if (nextAction.canExecute(currentCell, targetCell)) {
+            gm.getGUI().logMessage(nextAction.setLogAction(unit, target));
+
+            gm.handleAction(unit, target, nextAction, () -> {
+                // Try to spend remaining AP on the same target
+                tryExecutingAttack(unit, target, nextAction, gm);
+            });
+        } else {
+            // Out of range after recheck: reposition and end
+            repositionAfterAction(unit, targetCell, gm);
+        }
+    }
+
+    private void performAction(Unit unit, Unit target, Action action, List<Unit> allUnits, GameManager gm) {
+        gm.getGUI().logMessage(action.setLogAction(unit, target));
+
+        gm.handleAction(unit, target, action, () -> {
+            executeTurn(unit, allUnits, gm);
+        });
+    }
+
+
+    private void executeSupportTurn(Unit unit, Unit ally, Action supportAction, List<Unit> allUnits, GameManager gm) {
+        Cell selfCell = gm.getBackendGrid().getCell(unit);
+        Cell allyCell = gm.getBackendGrid().getCell(ally);
+
+        // If out of range, move first
+        if (!supportAction.canExecute(selfCell, allyCell) && unit.getMP() > 0) {
+            // re-evaluate after movement
+            moveIntoRange(unit, allyCell, supportAction.getRange(), gm, () -> {
+                Cell newSelf = gm.getBackendGrid().getCell(unit);
+                if (supportAction.canExecute(newSelf, allyCell)) {
+                    performAction(unit, ally, supportAction, allUnits, gm);
+                } else {
+                    endTurn(gm);
+                }
+            });
+            return;
+        }
+
+        // If already in range, perform the action immediately
+        if (supportAction.canExecute(selfCell, allyCell)) {
+            performAction(unit, ally, supportAction, allUnits, gm);
+        } else {
+            endTurn(gm);
+        }
+    }
+
+    // Move to safe area
+    private void repositionAfterAction(Unit unit, Cell targetCell, GameManager gm) {
+        if (unit.getMP() <= 0) {
+            endTurn(gm);
+            return;
+        }
+
+        Cell selfCell = gm.getBackendGrid().getCell(unit);
+        List<Cell> reachable = gm.getBackendGrid().getReachableCells(selfCell, unit.getMP());
+
+        Cell bestCell = selfCell;
+        double maxDistance = getDistance(selfCell, targetCell);
+
+        for (Cell candidate : reachable) {
+            double distance = getDistance(candidate, targetCell);
+            if (distance > maxDistance) {
+                maxDistance = distance;
+                bestCell = candidate;
             }
         }
-        return false;
+
+        if (!bestCell.equals(selfCell)) {
+            List<Cell> path = gm.getBackendGrid().calculatePathDijkstra(selfCell, bestCell);
+            path = limitPathByMP(path, unit.getMP());
+            gm.executeMovement(unit, path, () -> endTurn(gm));
+            return;
+        }
+
+        endTurn(gm);
+    }
+
+    // Move toward target
+    private void moveIntoRange(Unit unit, Cell targetCell, double range, GameManager gm, Runnable callback) {
+        Cell currentCell = gm.getBackendGrid().getCell(unit);
+        List<Cell> reachable = gm.getBackendGrid().getReachableCells(currentCell, unit.getMP());
+        Cell bestMove = null;
+        double bestDistance = -1;
+        double minDistanceToTarget = getDistance(currentCell, targetCell);
+        Cell bestFallbackMove = currentCell;
+
+        for (Cell candidate : reachable) {
+            // Skip occupied cells
+            if (candidate.getUnit() != null && !candidate.equals(currentCell)) {
+                continue;
+            }
+
+            double dist = getDistance(candidate, targetCell);
+
+            // Unit stay at furthest possible position
+            // while maintaining support/attack range
+            if (dist <= range && dist > bestDistance) {
+                bestDistance = dist;
+                bestMove = candidate;
+            }
+
+            // If unit can't move into range
+            // move toward target
+            if (dist < minDistanceToTarget) {
+                minDistanceToTarget = dist;
+                bestFallbackMove = candidate;
+            }
+        }
+
+        // If no valid in-range tile exists
+        // move toward target
+        if (bestMove == null && !bestFallbackMove.equals(currentCell)) {
+            bestMove = bestFallbackMove;
+        }
+
+        if (bestMove != null && !bestMove.equals(currentCell)) {
+            List<Cell> path = gm.getBackendGrid().calculatePathDijkstra(currentCell, bestMove);
+            path = limitPathByMP(path, unit.getMP());
+
+            if (path != null && path.size() > 1) {
+                gm.executeMovement(unit, path, callback);
+                return;
+            }
+        }
+
+        callback.run();
+    }
+
+    private Action getBestAttackAction(Unit unit) {
+        Action bestAction = null;
+        int maxRange = -1;
+        for (Action action : unit.getAvailableActions()) {
+            if (action.isTargetFriendly()) {
+                continue;
+            }
+            if (unit.getAP() < action.getApCost()) {
+                continue;
+            }
+            if (action.getRange() > maxRange) {
+                maxRange = action.getRange();
+                bestAction = action;
+            }
+        }
+        return bestAction;
     }
 
     private void endTurn(GameManager gm) {
@@ -133,98 +229,79 @@ public class AIStrategyRanged implements AIStrategy {
     }
 
     private Action findSupportAction(Unit unit) {
-        return unit.getAvailableActions().stream()
-                .filter(Action::isTargetFriendly)
-                .findFirst()
-                .orElse(null);
-    }
-
-    // Find the best cell away from the enemy within MP limit
-    private Cell calculateRetreatCell(Cell currentCell, Cell target, GameManager gm) {
-        Grid grid = gm.getBackendGrid();
-        Unit unit = currentCell.getUnit();
-
-        if (unit == null || unit.getMP() <= 0) return null;
-
-        // Use Dijkstra-based getReachableCells to find all valid moves within MP limit
-        List<Cell> reachableCells = grid.getReachableCells(currentCell, unit.getMP());
-
-        Cell bestRetreat = null;
-        double maxDist = getDistance(currentCell, target);
-
-        for (Cell candidate : reachableCells) {
-            double dist = getDistance(candidate, target);
-
-            // Pick the valid cell that maximizes the distance from the target
-            if (dist > maxDist) {
-                maxDist = dist;
-                bestRetreat = candidate;
+        for (Action action : unit.getAvailableActions()) {
+            if (action.isTargetFriendly()) {
+                return action;
             }
         }
-
-        return bestRetreat;
+        return null;
     }
 
-    // Find closest reachable enemy target
     private Unit findClosestEnemy(Unit currentUnit, List<Unit> allUnits, GameManager gm) {
         Unit closest = null;
         double min = Double.MAX_VALUE;
-        Cell selfCell = gm.getBackendGrid().getCell(currentUnit);
+        Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
 
-        for (Unit u : allUnits) {
-            if (!currentUnit.isTargetFriendly(u)) {
-                double d = getDistance(selfCell, gm.getBackendGrid().getCell(u));
-                if (d < min) {
-                    min = d;
-                    closest = u;
+        for (Unit unit : allUnits) {
+            if (!currentUnit.isTargetFriendly(unit)) {
+                double distance = getDistance(currentCell, gm.getBackendGrid().getCell(unit));
+
+                if (distance < min) {
+                    min = distance;
+                    closest = unit;
                 }
             }
         }
+
         return closest;
     }
 
-    // Find closest reachable friendly target
     private Unit findBestFriendlyTarget(Unit currentUnit, Action action, GameManager gm) {
-        List<Unit> allies = gm.getTurnManager().getAllActiveUnits().stream()
-                .filter(u -> u.isFriendly() == currentUnit.isFriendly()) // only friendly units
-                .filter(u -> u != currentUnit) // that are not the current one casting the buff
-                .toList();
-
         Unit bestTarget = null;
-        double lowestHealthRatio = 1.0;
+        double lowestHealthRatio = Double.MAX_VALUE;
+        Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
 
-        for (Unit ally : allies) {
-            if (action.isInRange(gm.getBackendGrid().getCell(currentUnit), gm.getBackendGrid().getCell(ally))) {
-                double healthRatio = (double) ally.getHP() / ally.getMaxHP();
-                if (healthRatio < lowestHealthRatio) {
-                    lowestHealthRatio = healthRatio;
-                    bestTarget = ally;
-                }
+        for (Unit unit : gm.getTurnManager().getAllActiveUnits()) {
+            if (unit == currentUnit) {
+                continue;
+            }
+
+            if (unit.isFriendly() != currentUnit.isFriendly()) {
+                continue;
+            }
+
+            Cell targetCell = gm.getBackendGrid().getCell(unit);
+            if (!action.canExecute(currentCell, targetCell)) {
+                continue;
+            }
+
+            double healthRatio = (double) unit.getHP() / unit.getMaxHP();
+            if (healthRatio < 0.9 && healthRatio < lowestHealthRatio) {
+                lowestHealthRatio = healthRatio;
+                bestTarget = unit;
             }
         }
-        return (lowestHealthRatio < 0.9 || !action.getType().equalsIgnoreCase("Heal")) ? bestTarget : null;
+
+        return bestTarget;
     }
 
     private double getDistance(Cell a, Cell b) {
         return Math.hypot(a.getCol() - b.getCol(), a.getRow() - b.getRow());
     }
 
-    // Restrict the Dijkstra path within the remaining MP
     private List<Cell> limitPathByMP(List<Cell> path, int mpLimit) {
         if (path == null || path.isEmpty()) return path;
-
-        int accumulatedCost = 0;
-        int validSteps = 1;
-
+        int cost = 0;
+        int valid = 1;
         for (int i = 1; i < path.size(); i++) {
-            accumulatedCost += path.get(i).getTerrainCost();
-
-            if (accumulatedCost <= mpLimit) {
-                validSteps++;
+            cost += path.get(i).getTerrainCost();
+            if (cost <= mpLimit) {
+                valid++;
             } else {
                 break;
             }
         }
-        return path.subList(0, validSteps);
+
+        return path.subList(0, valid);
     }
 }
