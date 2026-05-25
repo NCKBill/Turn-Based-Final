@@ -149,7 +149,7 @@ public class AIStrategyRanged implements AIStrategy {
             int nextC = currentUnit.getCol() + dir[1];
             Cell candidate = grid.getCell(nextR, nextC);
 
-            if (candidate != null && !candidate.isOccupied()) {
+            if (candidate != null && !candidate.isOccupied() && candidate.getTerrainCost() != Integer.MAX_VALUE) {
                 double dist = getDistance(candidate, target);
 
                 if (dist > maxDist) {
