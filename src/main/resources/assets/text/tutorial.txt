@@ -1,0 +1,17 @@
+# 1. Getting Started
+Choose your character class (Tank, Mage, Healer, Rogue) and select a map from the Start Menu. You can play normally against the AI, or watch an AI vs. AI simulation.
+# 2. Character Classes
+• Tank: High HP vanguard. Designed to soak up damage.
+• Mage: High ranged magic damage, but very fragile (low HP).
+• Healer: Restores HP to injured allies.
+• Rogue: Fast-moving physical attacker with high burst damage.
+# 3. Core Gameplay
+• Turn System: Each round each unit roll for initiative to decide turn order.
+• Movement: Clicking on highlighted tiles uses Movement Points (MP).
+• Terrains: Different terrains cost different amounts of MP to cross. Hovering on different terrains allow to view their cost.
+• Actions: Select an action from the Bottom Bar, then click a target in range on the grid.
+• Hit "End turn" when finished moving.
+
+# 4. Victory Conditions
+• Objective: Eliminate all 4 enemy units to win.
+• Defeat: If all your units reach 0 HP, you lose.

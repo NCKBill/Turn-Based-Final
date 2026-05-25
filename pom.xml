@@ -43,6 +43,7 @@
             <artifactId>javafx-media</artifactId>
             <version>21.0.2</version>
         </dependency>
+
     </dependencies>
 
     <build>

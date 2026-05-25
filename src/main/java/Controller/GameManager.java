@@ -6,8 +6,8 @@ import Board.Grid;
 import Unit.Unit;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
-import nckbill.turnbasedfinal.CellUI;
 import nckbill.turnbasedfinal.GameGUI;
+import nckbill.turnbasedfinal.UI.CellUI;
 
 import java.util.List;
 

@@ -15,6 +15,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import nckbill.turnbasedfinal.UI.*;
+import nckbill.turnbasedfinal.utils.AudioManager;
 
 import java.util.List;
 

@@ -32,6 +32,7 @@ public class AIStrategyTank implements AIStrategy {
         List<Cell> bestPath = new ArrayList<>();
         int minPathLength = Integer.MAX_VALUE;
 
+        // Find the shortest path to the closest enemy
         for (Unit target : allUnits) {
             if (self.isTargetFriendly(target)) continue;
 
@@ -39,19 +40,38 @@ public class AIStrategyTank implements AIStrategy {
             if (targetCell == null) continue;
 
             List<Cell> currentPath = gm.getBackendGrid().calculatePathDijkstra(startCell, targetCell);
+
             // Keep the shortest valid path
             if (!currentPath.isEmpty() && currentPath.size() < minPathLength) {
                 minPathLength = currentPath.size();
-                // Move adjacent to enemy unit instead of on top
+
+                // Move adjacent to enemy unit instead of directly on top of them
                 if (currentPath.getLast().getUnit() != null) {
                     currentPath.removeLast();
                 }
                 bestPath = currentPath;
             }
         }
-        // Limit path to movement points
-        int moveLimit = Math.min(bestPath.size(), self.getMP() + 1);
-        return bestPath.subList(0, moveLimit);
+
+        // Limit path based on MP cost of terrain
+        if (bestPath.isEmpty()) {
+            return bestPath;
+        }
+
+        int accumulatedCost = 0;
+        int validSteps = 1;
+
+        for (int i = 1; i < bestPath.size(); i++) {
+            accumulatedCost += bestPath.get(i).getTerrainCost();
+
+            if (accumulatedCost <= self.getMP()) {
+                validSteps++;
+            } else {
+                break;
+            }
+        }
+
+        return bestPath.subList(0, validSteps);
     }
 
     private void attackAdjacentEnemies(Unit currentUnit, GameManager gm) {

@@ -12,4 +12,8 @@ module nckbill.turnbasedfinal {
     exports Controller;
     exports Action;
     exports Board;
+    exports nckbill.turnbasedfinal.UI;
+    opens nckbill.turnbasedfinal.UI to javafx.fxml;
+    exports nckbill.turnbasedfinal.utils;
+    opens nckbill.turnbasedfinal.utils to javafx.fxml;
 }
