@@ -6,6 +6,7 @@ import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
@@ -101,13 +102,12 @@ public class UnitUI extends VBox {
         });
 
         attackAnimation.play();
-
     }
 
     // Glowing around unit sprite
     public void setActiveHighlight(boolean isActive) {
         if (isActive) {
-            javafx.scene.effect.DropShadow glow = new javafx.scene.effect.DropShadow();
+            DropShadow glow = new DropShadow();
             // Friendly units glow Yellow, enemies glow Orange
             glow.setColor(unit.isFriendly() ? javafx.scene.paint.Color.YELLOW : javafx.scene.paint.Color.ORANGE);
             glow.setRadius(15);
