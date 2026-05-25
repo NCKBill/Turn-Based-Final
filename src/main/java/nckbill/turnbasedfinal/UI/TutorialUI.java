@@ -17,13 +17,12 @@ import java.io.InputStreamReader;
 
 public class TutorialUI extends BorderPane {
     private final GameGUI gui;
-
     public TutorialUI(GameGUI gui) {
         this.gui = gui;
         this.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
         this.setPadding(new Insets(30, 50, 30, 50));
 
-        // --- Title ---
+        // Title
         Label title = new Label("How to Play");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 36));
         title.setStyle("-fx-text-fill: white;");
@@ -31,12 +30,12 @@ public class TutorialUI extends BorderPane {
         BorderPane.setMargin(title, new Insets(0, 0, 20, 0));
         this.setTop(title);
 
-        // --- Content (Scrollable) ---
+        // Content
         VBox contentBox = new VBox(20);
         contentBox.setStyle("-fx-background-color: transparent;");
         contentBox.setAlignment(Pos.TOP_LEFT);
 
-        // Read from the file instead of hardcoding
+        // Read from the file
         loadTutorialFromFile(contentBox);
 
         ScrollPane scrollPane = new ScrollPane(contentBox);
@@ -44,7 +43,7 @@ public class TutorialUI extends BorderPane {
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 10;");
         this.setCenter(scrollPane);
 
-        // --- Back Button ---
+        // Back Button
         Button backBtn = new Button("Back to Menu");
         backBtn.setPrefSize(200, 40);
         backBtn.setStyle("-fx-font-size: 18px; -fx-base: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
@@ -58,7 +57,6 @@ public class TutorialUI extends BorderPane {
     }
 
     private void loadTutorialFromFile(VBox contentBox) {
-        // Look in the resources/assets folder
         try (InputStream is = getClass().getResourceAsStream("/assets/text/tutorial.txt")) {
             if (is == null) {
                 System.out.println("Could not find tutorial.txt!");
