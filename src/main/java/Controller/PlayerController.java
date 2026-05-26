@@ -41,13 +41,17 @@ public class PlayerController implements Controller {
 
         // ── BRANCH 1: Player clicked an EMPTY cell → treat it as a movement intent ──
         if (clickedCell != null && !clickedCell.isOccupied()) {
-            gameManager.setSelectedAction(null); // Clicking empty space cancels any queued skill selection
+            // early return to cancel skill
+            if (selectedAction != null) {
+                gameManager.setSelectedAction(null);
+                return;
+            }
 
             // Only proceed with movement if the highlighted unit is the one currently taking its turn
             if (selectedViewUnit != null && selectedViewUnit == activeUnit) {
                 // Find which cell the active unit is currently standing on
                 Cell startCell = gameManager.getBackendGrid().getCell(selectedViewUnit);
-
+                if (selectedViewUnit.getMP() <= 0) return; // prevent user from spam clicking to move
                 // Compute all cells the unit can reach given its remaining movement points (MP)
                 List<Cell> reachable = gameManager.getBackendGrid().getReachableCells(startCell, selectedViewUnit.getMP());
 
