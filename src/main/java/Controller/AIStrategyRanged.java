@@ -278,7 +278,6 @@ public class AIStrategyRanged implements AIStrategy {
     private Unit findBestFriendlyTarget(Unit currentUnit, Action action, GameManager gm) {
         Unit bestTarget = null;
         double lowestHealthRatio = Double.MAX_VALUE;
-        Cell currentCell = gm.getBackendGrid().getCell(currentUnit);
 
         for (Unit unit : gm.getTurnManager().getAllActiveUnits()) {
             if (unit == currentUnit) {
