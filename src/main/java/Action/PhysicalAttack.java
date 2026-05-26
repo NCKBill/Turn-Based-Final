@@ -15,16 +15,10 @@ public class PhysicalAttack extends Action {
         int damage = 0;
         if (target != null) {
             if (!attacker.isTargetFriendly(target)) {
-                System.out.println(attacker.getName() + " casts " + this.getName() + " on " + target.getName());
-
                 // Damage = Strength - Defense
                 damage = this.getValue() + attacker.getStrength() - target.getDefense();
                 if (damage < 0) damage = 0;
                 this.setValueOnTarget(damage);
-                System.out.println(target.getName() + " was attacked for " + damage + " HP.");
-            } else {
-                // Prevent player from accidentally attacking a friendly unit
-                System.out.println("Invalid target! " + this.getName() + " can only be cast on enemy units.");
             }
             // Deduct AP cost
             attacker.setAP(attacker.getAP() - this.getApCost());

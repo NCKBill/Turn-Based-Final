@@ -14,17 +14,12 @@ public class DefAttack extends Action{
         int damage = 0;
         if (target != null) {
             if (!currentUnit.isTargetFriendly(target)) {
-                System.out.println(currentUnit.getName() + " casts " + this.getName() + " on " + target.getName() + ".");
 
                 // Damage = Default value + Attacker Defense - Target Defense
                 damage = this.getValue() + currentUnit.getDefense() - target.getDefense();
 
                 if (damage < 0) damage = 0;
                 this.setValueOnTarget(damage);
-                System.out.println(target.getName() + " was attacked for " + damage + " HP.");
-            } else {
-                // Prevent player from accidentally attacking a friendly unit
-                System.out.println("Invalid target! " + this.getName() + " can only be cast on enemy units.");
             }
             // Deduct AP cost
             currentUnit.setAP(currentUnit.getAP() - this.getApCost());
