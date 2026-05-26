@@ -139,15 +139,14 @@ public class GameManager {
             targetCellUI = gui.getGrid()[targetCell.getRow()][targetCell.getCol()];
         }
 
-        // Apply Logic — execute first so valueOnTarget is set before logging
-        int damage = action.execute(currentUnit, targetCell);
+        int actionValue = action.execute(currentUnit, targetCell);
 
         gui.logMessage(action.setLogAction(currentUnit, target));
 
         if (action.getType().equals("Damage"))
-            handleDamage(target, damage);
+            handleDamage(target, actionValue);
         else
-            handleHeal(target, action.getValue() + currentUnit.getPower());
+            handleHeal(target, actionValue);
 
         // Pass the callback to the GUI
         if (attackerCellUI != null && targetCellUI != null) {
