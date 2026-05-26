@@ -125,8 +125,6 @@ public class GameManager {
         if (currentUnit == null || currentUnit.getHP() <= 0) return;
         if (target == null || target.getHP() <= 0) return;
 
-        gui.logMessage(action.setLogAction(currentUnit, target));
-
         Cell attackerCell = getBackendGrid().getCell(currentUnit);
         Cell targetCell = getBackendGrid().getCell(target);
 
@@ -138,8 +136,10 @@ public class GameManager {
             targetCellUI = gui.getGrid()[targetCell.getRow()][targetCell.getCol()];
         }
 
-        // Apply Logic
+        // Apply Logic — execute first so valueOnTarget is set before logging
         int damage = action.execute(currentUnit, targetCell);
+
+        gui.logMessage(action.setLogAction(currentUnit, target));
 
         if (action.getType().equals("Damage"))
             handleDamage(target, damage);
