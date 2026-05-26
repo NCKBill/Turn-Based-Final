@@ -62,35 +62,31 @@ public class AIStrategyRanged implements AIStrategy {
         Cell targetCell = gm.getBackendGrid().getCell(target);
 
         // Target may have died
-        if (target == null || target.getHP() <= 0) {
-            repositionAfterAction(unit, currentCell, gm);
+        if (targetCell == null) {
+            endTurn(gm);
             return;
         }
 
         // Re-fetch best action in case AP changed between recursive calls
         Action nextAction = getBestAttackAction(unit);
         if (nextAction == null) {
-            // Out of AP: reposition and end turn
+            // Out of AP — reposition and end turn
             repositionAfterAction(unit, targetCell, gm);
             return;
         }
 
         if (nextAction.canExecute(currentCell, targetCell)) {
-            gm.getGUI().logMessage(nextAction.setLogAction(unit, target));
-
             gm.handleAction(unit, target, nextAction, () -> {
-                // Try to spend remaining AP on the same target
+                // Loop: attempt to spend remaining AP on the same target
                 tryExecutingAttack(unit, target, nextAction, gm);
             });
         } else {
-            // Out of range after recheck: reposition and end
+            // Fell out of range after recheck — reposition and end
             repositionAfterAction(unit, targetCell, gm);
         }
     }
 
     private void performAction(Unit unit, Unit target, Action action, List<Unit> allUnits, GameManager gm) {
-        gm.getGUI().logMessage(action.setLogAction(unit, target));
-
         gm.handleAction(unit, target, action, () -> {
             executeTurn(unit, allUnits, gm);
         });

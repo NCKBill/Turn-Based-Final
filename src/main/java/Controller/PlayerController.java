@@ -63,7 +63,6 @@ public class PlayerController implements Controller {
                     // Valid target — execute the action (e.g. deal damage, apply heal) and log what happened
                     gameManager.handleAction(activeUnit, clickedCell.getUnit(), selectedAction, () -> {
                     });
-                    gameManager.getGUI().logMessage(selectedAction.setLogAction(activeUnit, clickedCell.getUnit()));
                 } else {
                     // Invalid target — show the action's built-in error/reason message in the log
                     gameManager.getGUI().logMessage(selectedAction.getLogMessage());

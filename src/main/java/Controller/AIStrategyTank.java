@@ -31,7 +31,6 @@ public class AIStrategyTank implements AIStrategy {
                 for (Action action : currentUnit.getAvailableActions()) {
                     if (action.getType().equals("Damage"))
                         if (action.canExecute(currentCell, neighbor)) {
-                            gm.getGUI().logMessage(action.setLogAction(currentUnit, neighbor.getUnit()));
                             // Loop continuation is driven by the animation callback,
                             // matching how ranged handles multi-attack timing.
                             gm.handleAction(currentUnit, neighbor.getUnit(), action, () ->
