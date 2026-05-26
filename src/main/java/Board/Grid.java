@@ -10,7 +10,6 @@ public class Grid {
     private final int columns;
     private final int[][] direction = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-
     public Grid(int rows, int columns) {
         this.rows = rows;
         this.columns = columns;
@@ -22,17 +21,6 @@ public class Grid {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
                 grid[i][j] = new Cell(i, j, map.getMap()[i][j]);
-            }
-        }
-    }
-
-    private void initializeGrid(int mapIndex) {
-        Maps map = new Maps(mapIndex);
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < columns; c++) {
-                int terrainID = map.getMap()[r][c];
-                grid[r][c] = new Cell(r, c, terrainID);
-
             }
         }
     }
@@ -79,59 +67,77 @@ public class Grid {
     }
 
     /**
-     * Calculate the shortest path between starting cell and end cell using Dijkstra algorithm
-     *
-     * @param start x and y coordinate of the current unit
-     * @param end   x and y coordinate of the selected cell
-     * @return List of Cells representing the best path to take
+     * @param start    Origin cell
+     * @param end      Target cell for path-finding (null = flood-fill mode)
+     * @param mpLimit  Movement budget (-1 = unlimited, used for path-finding)
+     * @return Map of every reached cell to its best cost
      */
-    public List<Cell> calculatePathDijkstra(Cell start, Cell end) {
+    private Map<Cell, PathNode> runDijkstra(Cell start, Cell end, int mpLimit) {
         PriorityQueue<PathNode> queue = new PriorityQueue<>();
-        Map<Cell, Integer> bestCostMap = new HashMap<>();
+        Map<Cell, PathNode> bestNodes = new HashMap<>();
 
         PathNode startNode = new PathNode(start, 0, null);
-        bestCostMap.put(start, 0);
+        bestNodes.put(start, startNode);
         queue.add(startNode);
 
         while (!queue.isEmpty()) {
             PathNode current = queue.poll();
             Cell currentCell = current.cell;
 
-            if (currentCell.equals(end)) {
-                return pathConstruct(current);
+            // Early exit when we've found the target (path-finding mode)
+            if (end != null && currentCell.equals(end)) {
+                break;
             }
 
             for (int[] dir : direction) {
                 int nextX = currentCell.getRow() + dir[0];
                 int nextY = currentCell.getCol() + dir[1];
-                Cell gridNeighbor = getCell(nextX, nextY);
+                Cell neighbor = getCell(nextX, nextY);
 
-                if (gridNeighbor != null) {
-                    if (gridNeighbor.isOccupied() && !gridNeighbor.equals(end)) continue;
-                    
-                    int moveCost = gridNeighbor.getTerrainCost();
+                if (neighbor == null) continue;
 
-                    // Prevent entering impassable terrain (Wall)
-                    if (moveCost == Integer.MAX_VALUE) continue;
+                // In path-finding mode allow stepping onto the occupied end cell;
+                // in flood-fill mode skip all occupied cells.
+                boolean isEndCell = (end != null && neighbor.equals(end));
+                if (neighbor.isOccupied() && !isEndCell) continue;
 
-                    int totalCost = current.cost + moveCost;
+                int moveCost = neighbor.getTerrainCost();
+                if (moveCost == Integer.MAX_VALUE) continue; // impassable
 
-                    // Compare total cost of current path found to previously recorded path of the neighbour
-                    if (totalCost < bestCostMap.getOrDefault(gridNeighbor, Integer.MAX_VALUE)) {
-                        bestCostMap.put(gridNeighbor, totalCost);
-                        queue.add(new PathNode(gridNeighbor, totalCost, current));
-                    }
+                int totalCost = current.cost + moveCost;
+
+                // Respect the MP budget in flood-fill mode
+                if (mpLimit >= 0 && totalCost > mpLimit) continue;
+
+                PathNode existing = bestNodes.get(neighbor);
+                if (existing == null || totalCost < existing.cost) {
+                    PathNode newNode = new PathNode(neighbor, totalCost, current);
+                    bestNodes.put(neighbor, newNode);
+                    queue.add(newNode);
                 }
             }
         }
-        return new ArrayList<>();
+
+        return bestNodes;
     }
 
     /**
-     * Turn PathNode into List of Cells to represent path
+     * Calculate the shortest path between starting cell and end cell using Dijkstra.
      *
-     * @param targetNode Root node
-     * @return List of children Cells of the root node
+     * @param start Origin cell of the unit
+     * @param end   Destination cell
+     * @return List of Cells representing the best path to take
+     */
+    public List<Cell> calculatePathDijkstra(Cell start, Cell end) {
+        Map<Cell, PathNode> bestNodes = runDijkstra(start, end, -1);
+
+        PathNode endNode = bestNodes.get(end);
+        if (endNode == null) return new ArrayList<>();
+        return pathConstruct(endNode);
+    }
+
+    /**
+     * Turn PathNode into List of Cells to represent path.
      */
     private List<Cell> pathConstruct(PathNode targetNode) {
         List<Cell> path = new ArrayList<>();
@@ -155,49 +161,18 @@ public class Grid {
     }
 
     /**
-     * Calculate all reachable Cells within the unit's MP limit
+     * Calculate all reachable Cells within the unit's MP limit.
      *
      * @param startCell Origin cell of the Unit
      * @param mpLimit   MP of the Unit
      * @return a list of all Cells the unit can reach within the movement limit
      */
     public List<Cell> getReachableCells(Cell startCell, int mpLimit) {
-        // Map tracks visited cells & their distance
-        Map<Cell, Integer> bestCosts = new HashMap<>();
-        PriorityQueue<PathNode> queue = new PriorityQueue<>();
+        Map<Cell, PathNode> bestNodes = runDijkstra(startCell, null, mpLimit);
 
-        bestCosts.put(startCell, 0);
-        queue.add(new PathNode(startCell, 0, null));
+        // Remove the start cell so the unit cannot "move" to its own tile
+        bestNodes.remove(startCell);
 
-        while (!queue.isEmpty()) {
-            PathNode current = queue.poll();
-            Cell currentCell = current.cell;
-
-            for (int[] dir : direction) {
-                int newRow = currentCell.getRow() + dir[0];
-                int newCol = currentCell.getCol() + dir[1];
-                Cell neighbor = getCell(newRow, newCol);
-
-                // Check if valid and walkable
-                if (neighbor != null && neighbor.getUnit() == null) {
-                    int moveCost = neighbor.getTerrainCost();
-                    // Prevent entering impassable terrain (Wall)
-                    if (moveCost == Integer.MAX_VALUE) continue;
-
-                    int totalCost = current.cost + moveCost;
-
-                    if (totalCost <= mpLimit && totalCost < bestCosts.getOrDefault(neighbor, Integer.MAX_VALUE)) {
-                        bestCosts.put(neighbor, totalCost);
-                        queue.add(new PathNode(neighbor, totalCost, current));
-                    }
-                }
-            }
-        }
-
-        // Remove start cell to prevent unit from moving in place
-        bestCosts.remove(startCell);
-
-        return new ArrayList<>(bestCosts.keySet());
-
+        return new ArrayList<>(bestNodes.keySet());
     }
 }

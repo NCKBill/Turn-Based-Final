@@ -25,12 +25,12 @@ import java.util.List;
  * Build main window (StartUI)
  * and organize menus (top bar, sidebar, bottom bar)
  * Handle switching between Start Menu and in game grid.
- *
+
  * <h3>In game:</h3>
  * Draw square grid and keep characters in sync.
  * Run animation
  * Draw yellow movement path for player's character.
- * <p>
+
  * Listen to mouse click, tell GameManager to decide what to do.
  * Handle playing background music.
  * Handle all visual and audio of the game
@@ -58,12 +58,11 @@ public class GameGUI extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
     @Override
     public void start(Stage primaryStage) {
-
         rootLayout = new BorderPane();
         gameManager = new GameManager(this, row, column);
-        // initialize all boxes (visual on screen)
         topBar = new TopBarUI(this);
         bottomBar = new BottomBarUI(this);
         sideBarUI = new SideBarUI();
@@ -72,7 +71,6 @@ public class GameGUI extends Application {
         rootLayout.setCenter(startUI);
 
         initializeGrid();
-        // Start the game
         Scene scene = new Scene(rootLayout, 1000, 800);
         primaryStage.setTitle("Glorious Battle");
         primaryStage.setScene(scene);
@@ -80,30 +78,31 @@ public class GameGUI extends Application {
         playBGM();
     }
 
-    // show top bar, bottom bar, sidebar, grid
     public void showGameGUI() {
         rootLayout.setTop(topBar);
         rootLayout.setBottom(bottomBar);
         rootLayout.setRight(sideBarUI);
         rootLayout.setCenter(interactiveGrid);
     }
+
     public void hideGameGUI() {
         rootLayout.setTop(null);
         rootLayout.setBottom(null);
         rootLayout.setRight(null);
     }
 
-    // Return to start menu after game end (win/loss)
-    private void returnToMainMenu() {
-        javafx.application.Platform.runLater(() -> {
+    public void restartGame() {
+        Platform.runLater(() -> {
             hideGameGUI();
             rootLayout.setCenter(startUI);
             interactiveGrid.setDisable(false);
             bottomBar.initializeDefault();
+            gameManager.resetGame();
+            sideBarUI.clearLog();
+            playBGMWithFade("/assets/audio/menu-theme.mp3");
         });
     }
 
-    // Method to initialize grid
     public void initializeGrid() {
         interactiveGrid = new GridPane();
         interactiveGrid.setStyle("-fx-background-color: #ffffff; -fx-alignment: center;");
@@ -127,7 +126,6 @@ public class GameGUI extends Application {
                 }
 
                 visualCell.setOnMouseClicked(e -> gameManager.handleCellClick(finalRow, finalCol));
-
                 interactiveGrid.add(visualCell, c, r);
             }
         }
@@ -164,11 +162,9 @@ public class GameGUI extends Application {
                     }
                 }
             }
-
         }
     }
 
-    // draw highlight path for player unit
     public void drawPathHighlight(int targetRow, int targetCol) {
         Unit selected = getSelectedViewUnit();
         Unit active = gameManager.getTurnManager().getActiveUnit();
@@ -182,7 +178,6 @@ public class GameGUI extends Application {
 
                 if (fullPath != null && !fullPath.isEmpty()) {
                     int remainingMP = selected.getMP();
-                    // Skip start cell in path if it is included
                     int startIndex = (fullPath.get(0).equals(startCell)) ? 1 : 0;
 
                     for (int i = startIndex; i < fullPath.size(); i++) {
@@ -199,7 +194,7 @@ public class GameGUI extends Application {
                                 }
                             }
                         } else {
-                            break; // Out of MP
+                            break;
                         }
                     }
                 }
@@ -254,12 +249,10 @@ public class GameGUI extends Application {
 
             if (onCompleted != null) {
                 if (stepsAdded[0] > 0) {
-                    // Unit actually moved — brief pause so the last step is visible
                     javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(Duration.millis(500));
                     pause.setOnFinished(e -> onCompleted.run());
                     pause.play();
                 } else {
-                    // No movement — run callback immediately with no delay
                     onCompleted.run();
                 }
             }
@@ -268,16 +261,13 @@ public class GameGUI extends Application {
         timeline.play();
     }
 
-    public void executeUnitAnimation(CellUI currentUnitCell, CellUI targetCell, Runnable onAnimationComplete) {
-        UnitUI currentUnitUI = currentUnitCell.getUnitUI();
+    public void executeUnitAnimation(CellUI attackerCell, CellUI targetCell, Runnable onAnimationComplete) {
+        UnitUI attackerUI = attackerCell.getUnitUI();
 
-        if (currentUnitUI != null) {
-            double dx = (targetCell.getCol() - currentUnitCell.getCol()) * 30;
-            double dy = (targetCell.getRow() - currentUnitCell.getRow()) * 30;
-
-            // Fire callback only after the bump animation fully completes,
-            // so fast game speeds can't start the next attack mid-animation.
-            currentUnitUI.playActionAnimation(dx, dy, onAnimationComplete);
+        if (attackerUI != null) {
+            double dx = (targetCell.getCol() - attackerCell.getCol()) * 20;
+            double dy = (targetCell.getRow() - attackerCell.getRow()) * 20;
+            attackerUI.playActionAnimation(dx, dy, onAnimationComplete);
         } else {
             if (onAnimationComplete != null) {
                 onAnimationComplete.run();
@@ -306,16 +296,6 @@ public class GameGUI extends Application {
                 playBGMWithFade("/assets/audio/defeat.mp3");
 
             alert.showAndWait();
-        });
-    }
-
-    public void restartGame() {
-        Platform.runLater(() -> {
-            interactiveGrid.setDisable(true);
-            returnToMainMenu();
-            gameManager.resetGame();
-            sideBarUI.clearLog();
-            playBGMWithFade("/assets/audio/menu-theme.mp3");
         });
     }
 
@@ -375,5 +355,4 @@ public class GameGUI extends Application {
     public void playBGMWithFade(String path) {
         AudioManager.playBGMWithFade(1.0, 0.2, path);
     }
-
 }

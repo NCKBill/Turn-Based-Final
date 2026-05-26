@@ -15,7 +15,6 @@ import nckbill.turnbasedfinal.utils.ImageCache;
  * <h1>Visual Composition:</h1>
  * Render terrain image
  * Manage node when a unit is on the tile.
- * <p>
  * Highlight
  * Adjust overlay highlight to indicate movement range
  * Capture hover to update sidebar with terrain details/character statistics
@@ -39,7 +38,6 @@ public class CellUI extends StackPane {
     private ImageView unitImageView;
     private static final int CELL_SIZE = 50;
 
-
     private int terrainType = 0; // 0: Grass, 1: Water, 2: Woods, 3: Wall
     private int variant = 1;
 
@@ -50,18 +48,18 @@ public class CellUI extends StackPane {
         this.sideTerrainLabel = sideTerrainLabel;
         this.sideUnitStatLabel = sideUnitStatLabel;
         this.gui = gui;
+
         this.setPrefSize(CELL_SIZE, CELL_SIZE);
         this.setMinSize(CELL_SIZE, CELL_SIZE);
         this.setMaxSize(CELL_SIZE, CELL_SIZE);
-        // Try to fetch variant from backend if possible
+
         if (gui.getGameManager() != null && gui.getGameManager().getBackendGrid() != null) {
             Cell backendCell = gui.getGameManager().getBackendGrid().getCell(row, col);
             this.variant = (backendCell != null) ? backendCell.getVariant() : 1;
         }
 
-        this.setPrefSize(CELL_SIZE, CELL_SIZE);
         this.setStyle("-fx-border-color: #333333; -fx-border-width: 1px;");
-        
+
         // Set up Terrain Image View
         terrainImageView = new ImageView();
         terrainImageView.setFitWidth(CELL_SIZE);
@@ -105,9 +103,7 @@ public class CellUI extends StackPane {
         terrainImageView.setImage(ImageCache.getImage(path));
     }
 
-
     public void setUnit(Unit unit) {
-        // This prevents the ongoing attack animation from being destroyed.
         if (this.unit == unit && this.unit != null && this.unitVisual != null) {
             this.unitVisual.updateHP();
             resetColor();
@@ -154,7 +150,6 @@ public class CellUI extends StackPane {
         resetColor();
     }
 
-    // Draws path color
     public void setPathHighlight(boolean isPath) {
         if (isPath) {
             background.setFill(Color.YELLOW);

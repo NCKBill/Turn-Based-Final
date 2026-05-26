@@ -88,17 +88,17 @@ public abstract class Action {
         }
 
         if (!isInRange(start, target)) {
-            logMessage += this.getName() + ": Not in range.";
+            logMessage += "\n" + this.getName() + ": Not in range.";
             canExecute = false;
         }
 
         if (!this.targetFriendly && unit.isTargetFriendly(target.getUnit())) {
-            logMessage += this.getName() + ": Cannot damage allies.";
+            logMessage += "\n" + this.getName() + ": Cannot damage allies.";
             canExecute = false;
         }
 
         if (this.targetFriendly && !unit.isTargetFriendly(target.getUnit())) {
-            logMessage += this.getName() + ": Cannot buff enemies.";
+            logMessage += "\n" + this.getName() + ": Cannot buff enemies.";
             canExecute = false;
         }
         return canExecute;

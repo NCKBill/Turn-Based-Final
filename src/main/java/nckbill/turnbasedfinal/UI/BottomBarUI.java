@@ -14,11 +14,11 @@ import nckbill.turnbasedfinal.GameGUI;
 
 /**
  * <h1>Bottom Interface panel:</h1>
- * <p>
+
  * Left Interface:
  * End turn button: end player's turn
  * Skill buttons: contain all skill buttons of the currently selected unit.
- * <p>
+
  * Right Interface:
  * Return to menu button (self-explanatory)
  * Slider to adjust global animation speed and delay.
@@ -30,6 +30,7 @@ public class BottomBarUI extends HBox {
     // UI Elements
     private final Button restartButton;
     private final HBox speedControlBox;
+    private final Button endTurnButton;
 
     // Structural Containers
     private final HBox leftBox;
@@ -41,11 +42,9 @@ public class BottomBarUI extends HBox {
         this.setSpacing(20);
         this.setStyle("-fx-background-color: #c0c0c0; -fx-padding: 10px;");
 
-        // 1. Setup static Right Side elements
+        // Setup Right Side elements
         restartButton = new Button("Return to Main Menu");
-        restartButton.setOnAction(e -> {
-            gui.restartGame();
-        });
+        restartButton.setOnAction(e -> gui.restartGame());
 
         Label speedLabel = new Label(String.format("Speed: %.1fx", GameGUI.getGameSpeed()));
         speedLabel.setStyle("-fx-font-weight: bold;");
@@ -64,8 +63,13 @@ public class BottomBarUI extends HBox {
         speedControlBox = new HBox(10, speedLabel, speedSlider);
         speedControlBox.setAlignment(Pos.CENTER);
 
+        // Create the End Turn button
+        endTurnButton = new Button("End Turn");
+        endTurnButton.setOnAction(e -> gameManager.endPlayerTurn());
+
         leftBox = new HBox(15);
         leftBox.setAlignment(Pos.CENTER_LEFT);
+        leftBox.getChildren().add(endTurnButton);
 
         rightBox = new HBox(15);
         rightBox.setAlignment(Pos.CENTER_RIGHT);
@@ -78,21 +82,15 @@ public class BottomBarUI extends HBox {
     }
 
     public void initializeDefault() {
+        // Remove all skill buttons (keep end turn button since it's always the same)
         leftBox.getChildren().clear();
-        Button endTurnButton = new Button("End Turn");
-
-        Unit unit = gameManager.getTurnManager().getActiveUnit();
-        if (unit != null && unit.getUnitController().getClass().getSimpleName().equals("AIController"))
-            endTurnButton.setDisable(true);
-
-        boolean isPlayerTurn = (unit != null && unit.getUnitController().getClass().getSimpleName().equals("PlayerController"));
-
-        endTurnButton.setDisable(!isPlayerTurn);
-        endTurnButton.setOnAction(e -> {
-            gameManager.endPlayerTurn();
-        });
-
         leftBox.getChildren().add(endTurnButton);
+
+        // Update disabled state based on whose turn it is
+        Unit unit = gameManager.getTurnManager().getActiveUnit();
+        boolean isPlayerTurn = (unit != null &&
+                unit.getUnitController().getClass().getSimpleName().equals("PlayerController"));
+        endTurnButton.setDisable(!isPlayerTurn);
     }
 
     public void updateBottomBarSkills(Unit selectedUnit) {
