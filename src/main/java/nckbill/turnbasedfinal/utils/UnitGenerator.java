@@ -12,6 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Class to generate units (player unit, AI allies units, AI enemies units)
+ * Default to 4 allies and 4 enemies
+ * Spawn ally units in bottom of the map
+ * Spawn enemy units on top of the map
+ */
 public class UnitGenerator {
     private final Random rand = new Random();
     public int allyCount;
@@ -131,6 +137,9 @@ public class UnitGenerator {
                 break;
             case 1:
                 unit = new Rogue(isFriendly, aiTank);
+                break;
+            case 2:
+                unit = new Healer(isFriendly, aiRanged);
                 break;
             default:
                 unit = new Tank(isFriendly, aiTank);
