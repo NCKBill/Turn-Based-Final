@@ -8,6 +8,9 @@ import nckbill.turnbasedfinal.GameGUI;
 
 import java.util.Queue;
 
+/**
+ * Display current turn orders of remaining units
+ */
 public class TopBarUI extends HBox {
     private final GameGUI gui;
     private final HBox queueDisplayContainer;

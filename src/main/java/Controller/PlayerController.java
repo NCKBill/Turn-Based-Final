@@ -6,6 +6,17 @@ import Unit.Unit;
 
 import java.util.List;
 
+/**
+ * Acts as translator between the player's GUI inputs and the game's backend logic.
+ * Halts execution during a turn and waits for the GUI to pass mouse clicks to the handleInput method.
+ * <p>
+ * Input Handling & Logic:
+ * * Movement (Empty Tile): If no skill is selected and an empty tile is clicked
+ * Calculates a Dijkstra path and moves the unit if within MP range.
+ * Action (Queued Skill): If a skill is active
+ * validates the target (range, line-of-sight, ally/enemy), executes the ability, and logs the outcome.
+ * Clears queued actions after an attempt and commands the GUI to refresh unit stats.
+ */
 public class PlayerController implements Controller {
     private GameManager gameManager; // Reference to the central game manager that coordinates all game logic
 

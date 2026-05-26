@@ -12,17 +12,28 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import nckbill.turnbasedfinal.GameGUI;
 
+/**
+ * <h1>Bottom Interface panel:</h1>
+ * <p>
+ * Left Interface:
+ * End turn button: end player's turn
+ * Skill buttons: contain all skill buttons of the currently selected unit.
+ * <p>
+ * Right Interface:
+ * Return to menu button (self-explanatory)
+ * Slider to adjust global animation speed and delay.
+ */
 public class BottomBarUI extends HBox {
     private final GameManager gameManager;
     private final GameGUI gui;
 
     // UI Elements
-    private Button restartButton;
-    private HBox speedControlBox;
+    private final Button restartButton;
+    private final HBox speedControlBox;
 
     // Structural Containers
-    private HBox leftBox;
-    private HBox rightBox;
+    private final HBox leftBox;
+    private final HBox rightBox;
 
     public BottomBarUI(GameGUI gui) {
         this.gui = gui;

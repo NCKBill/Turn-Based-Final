@@ -5,8 +5,12 @@ import Unit.Unit;
 
 import java.util.List;
 
+/**
+ * Parent class for AIStrategyTank and AIStrategyRanged
+ * Handle initializing Strategy depending on input strategy string
+ */
 public class AIController implements Controller {
-    private GameManager gameManager;
+    private final GameManager gameManager;
     private AIStrategy currentStrategy;
 
     public AIController(GameManager gameManager, String strategy) {

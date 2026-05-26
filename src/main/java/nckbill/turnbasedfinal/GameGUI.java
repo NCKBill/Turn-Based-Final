@@ -20,6 +20,21 @@ import nckbill.turnbasedfinal.utils.AudioManager;
 
 import java.util.List;
 
+/**
+ * <h3>Layout:</h3>
+ * Build main window (StartUI)
+ * and organize menus (top bar, sidebar, bottom bar)
+ * Handle switching between Start Menu and in game grid.
+ *
+ * <h3>In game:</h3>
+ * Draw square grid and keep characters in sync.
+ * Run animation
+ * Draw yellow movement path for player's character.
+ * <p>
+ * Listen to mouse click, tell GameManager to decide what to do.
+ * Handle playing background music.
+ * Handle all visual and audio of the game
+ */
 public class GameGUI extends Application {
     private BorderPane rootLayout;
     private GridPane interactiveGrid;
@@ -65,7 +80,7 @@ public class GameGUI extends Application {
         playBGM();
     }
 
-
+    // show top bar, bottom bar, sidebar, grid
     public void showGameGUI() {
         rootLayout.setTop(topBar);
         rootLayout.setBottom(bottomBar);
@@ -153,6 +168,7 @@ public class GameGUI extends Application {
         }
     }
 
+    // draw highlight path for player unit
     public void drawPathHighlight(int targetRow, int targetCol) {
         Unit selected = getSelectedViewUnit();
         Unit active = gameManager.getTurnManager().getActiveUnit();
@@ -252,16 +268,16 @@ public class GameGUI extends Application {
         timeline.play();
     }
 
-    public void executeUnitAnimation(CellUI attackerCell, CellUI targetCell, Runnable onAnimationComplete) {
-        UnitUI attackerUI = attackerCell.getUnitUI();
+    public void executeUnitAnimation(CellUI currentUnitCell, CellUI targetCell, Runnable onAnimationComplete) {
+        UnitUI currentUnitUI = currentUnitCell.getUnitUI();
 
-        if (attackerUI != null) {
-            double dx = (targetCell.getCol() - attackerCell.getCol()) * 20;
-            double dy = (targetCell.getRow() - attackerCell.getRow()) * 20;
+        if (currentUnitUI != null) {
+            double dx = (targetCell.getCol() - currentUnitCell.getCol()) * 30;
+            double dy = (targetCell.getRow() - currentUnitCell.getRow()) * 30;
 
             // Fire callback only after the bump animation fully completes,
             // so fast game speeds can't start the next attack mid-animation.
-            attackerUI.playAttackAnimation(dx, dy, onAnimationComplete);
+            currentUnitUI.playActionAnimation(dx, dy, onAnimationComplete);
         } else {
             if (onAnimationComplete != null) {
                 onAnimationComplete.run();

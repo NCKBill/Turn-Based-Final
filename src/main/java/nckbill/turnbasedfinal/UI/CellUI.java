@@ -10,6 +10,17 @@ import javafx.scene.shape.Rectangle;
 import nckbill.turnbasedfinal.GameGUI;
 import nckbill.turnbasedfinal.utils.ImageCache;
 
+/**
+ * Represent visual JavaFX component of a single grid cell
+ * <h1>Visual Composition:</h1>
+ * Render terrain image
+ * Manage node when a unit is on the tile.
+ * <p>
+ * Highlight
+ * Adjust overlay highlight to indicate movement range
+ * Capture hover to update sidebar with terrain details/character statistics
+ * Triggers the main GUI manager to draw or clear real-time pathfinding previews as the user's cursor moves across the grid.
+ */
 public class CellUI extends StackPane {
 
     private int row;

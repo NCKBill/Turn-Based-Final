@@ -15,6 +15,12 @@ import javafx.util.Duration;
 import nckbill.turnbasedfinal.GameGUI;
 import nckbill.turnbasedfinal.utils.ImageCache;
 
+/**
+ * Contain UI for unit in battle
+ * Each unit wrap in a container containing their image + health bar
+ * Health-bar will update when unit is damaged/healed
+ * Play action animation (sprite move toward enemy, then back)
+ */
 public class UnitUI extends VBox {
     private final Unit unit;
     private final ImageView unitImage;
@@ -80,7 +86,7 @@ public class UnitUI extends VBox {
         return unit;
     }
 
-    public void playAttackAnimation(double deltaX, double deltaY, Runnable onComplete) {
+    public void playActionAnimation(double deltaX, double deltaY, Runnable onComplete) {
         this.setTranslateX(0);
         this.setTranslateY(0);
 

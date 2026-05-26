@@ -6,8 +6,21 @@ import Unit.Unit;
 
 import java.util.List;
 
+/**
+ * Priority 1: Use support action
+ * Priority 2: Attack
+ * Priority 3: Kite/Run
+ * <p>
+ * Attack:
+ * Select action with the longest range
+ * Maintain maximum range between self and target
+ * Kite when necessary -> Move to the furthest tile from enemies after using all AP.
+ * <p>
+ * Support:
+ * Friendly unit must be under 90% HP
+ * Calculate a path toward identified unit to move into support range.
+ */
 public class AIStrategyRanged implements AIStrategy {
-
     @Override
     public void executeTurn(Unit currentUnit, List<Unit> allUnits, GameManager gm) {
         Action supportAction = findSupportAction(currentUnit);

@@ -9,6 +9,15 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
+/**
+ * Sidebar in the battle.
+ * <p>
+ * Visual Composition:
+ * Unit info: Hold unit stats (hp, mp, ap, etc.)
+ * Terrain info: Hold terrain info (name, cost to traverse, location on grid)
+ * Action info: Hold action stats (cost, range, value)
+ * Log messages: Hold log messages for action, death, unit's turn.
+ */
 public class SideBarUI extends BorderPane {
     private Label unitStatsLabel;
     private Label cellInfoLabel;

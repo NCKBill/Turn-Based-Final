@@ -15,6 +15,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * Read from assets/text/tutorial.txt and display tutorial.
+ */
 public class TutorialUI extends BorderPane {
     private final GameGUI gui;
     public TutorialUI(GameGUI gui) {

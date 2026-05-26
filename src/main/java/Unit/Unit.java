@@ -6,6 +6,9 @@ import Controller.Controller;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Parent class for all units
+ */
 public abstract class Unit {
     private String name;
     private int HP;

@@ -6,12 +6,15 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Find images inside resources folder
+ * Parse URL and return Image of desired assets
+ */
 public class ImageCache {
     private static final Map<String, Image> cache = new HashMap<>();
 
     public static Image getImage(String path) {
         if (!cache.containsKey(path)) {
-            // Find the resource inside the src/main/resources folder
             URL imageUrl = ImageCache.class.getResource(path);
 
             if (imageUrl == null) {

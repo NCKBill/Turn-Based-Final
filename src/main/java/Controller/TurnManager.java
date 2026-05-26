@@ -4,6 +4,21 @@ import Unit.Unit;
 
 import java.util.*;
 
+/**
+ * <p>
+ * Initiative System:
+ * * Each unit roll a 10 sided dice
+ * * Then roll another one with their Initiation stat as the number of side
+ * * Bundle units into UnitWrap and into PriorityQueue
+ * * Sort by the total roll of each unit from highest to lowest for the turn order.
+ * </p>
+ * <p>
+ * Turn Management:
+ * Automatically cycle to the next unit and trigger new round of rolling when queue is empty
+ * Remove dead units from queue mid-round.
+ * Generate a copy of upcoming turn order for GUI.
+ * </p>
+ */
 public class TurnManager {
     private final Queue<UnitWrap> movementQueue;
     private final Random dice;

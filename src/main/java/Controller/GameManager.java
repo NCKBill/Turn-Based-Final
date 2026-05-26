@@ -6,16 +6,20 @@ import Board.Grid;
 import Unit.Unit;
 import nckbill.turnbasedfinal.GameGUI;
 import nckbill.turnbasedfinal.UI.CellUI;
-import nckbill.turnbasedfinal.utils.AudioManager;
 
 import java.util.List;
 
 /**
- * This class handle:
- * Starting & ending game
- * Processing and ending turns
- * Handling player's click on cells
+ * Start game: Initialize grid fields
+ * Ask Turn Manager to calculate turn order
+ * Process turn
+ * End turn
+ * GUI pass coordinate of player's click
+ * -> GameManager check what on the tile and react accordingly
+ * -> Unit: update sidebar
+
  * Handle damage & death
+ * Track current ally and enemy count to handle victory and defeat
  */
 public class GameManager {
     private Grid backendGrid;
@@ -229,7 +233,6 @@ public class GameManager {
         gui.refreshVisualGrid();
     }
 
-
     public Grid getBackendGrid() {
         return backendGrid;
     }
@@ -253,9 +256,4 @@ public class GameManager {
     public GameGUI getGUI() {
         return gui;
     }
-
-    public void playBGMWithFade(String path) {
-        AudioManager.playBGMWithFade(1.0, 0.2, path);
-    }
-
 }

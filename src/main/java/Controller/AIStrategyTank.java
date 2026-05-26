@@ -7,6 +7,11 @@ import Unit.Unit;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Priority 1: Move toward target
+ * Priority 2: Attack
+ * that's it
+ */
 public class AIStrategyTank implements AIStrategy {
     @Override
     public void executeTurn(Unit self, List<Unit> allUnits, GameManager gm) {

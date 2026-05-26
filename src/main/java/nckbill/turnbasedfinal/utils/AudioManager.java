@@ -9,6 +9,11 @@ import javafx.util.Duration;
 
 import java.util.Objects;
 
+/**
+ * Manage looping background music
+ * Contain methods for musics: play, pause, resume, change volume, etc
+ * Fade out current music then play the next one
+ */
 public final class AudioManager {
 
     private static MediaPlayer bgMusicPlayer;
@@ -22,23 +27,13 @@ public final class AudioManager {
     public static void playBGM(String resourcePath) {
         try {
             stopBGM();
-
-            Media media = new Media(
-                    Objects.requireNonNull(AudioManager.class
-                                    .getResource(resourcePath))
-                            .toExternalForm()
-            );
-
+            Media media = new Media(Objects.requireNonNull(AudioManager.class.getResource(resourcePath)).toExternalForm());
             bgMusicPlayer = new MediaPlayer(media);
-
             bgMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
             bgMusicPlayer.setVolume(0.35);
-
             bgMusicPlayer.play();
-
         } catch (Exception e) {
             System.err.println("Could not play music: " + resourcePath);
-            e.printStackTrace();
         }
     }
 

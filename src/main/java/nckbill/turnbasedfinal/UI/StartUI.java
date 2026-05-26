@@ -15,6 +15,20 @@ import nckbill.turnbasedfinal.utils.UnitGenerator;
 
 import java.util.List;
 
+/**
+ * Start menu of the game.
+ * <p>
+ * Visual composition:
+ * Character selection: select from 4 characters portraits (Tank, Rogue, Mage, Healer)
+ * Map Selection: select from 4 pre-determined maps (grass, trees, mixed, mountain)
+ * Game-mode selection
+ * Normal: Load into a battle with
+ * 1 player-controlled unit
+ * 3 allied AI units in the bottom of the map
+ * 4 enemy AI units in the top of the map
+ * AI-only: Load into an AI-only battle as a demo
+ * Tutorial: switch to TutorialUI
+ */
 public class StartUI extends VBox {
     private Button startButton;
     private Button startButtonAI;
