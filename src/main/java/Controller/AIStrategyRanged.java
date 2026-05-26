@@ -127,12 +127,22 @@ public class AIStrategyRanged implements AIStrategy {
         }
 
         Cell selfCell = gm.getBackendGrid().getCell(unit);
+        if (selfCell == null) {
+            endTurn(gm);
+            return;
+        }
+
         List<Cell> reachable = gm.getBackendGrid().getReachableCells(selfCell, unit.getMP());
 
         Cell bestCell = selfCell;
         double maxDistance = getDistance(selfCell, targetCell);
 
         for (Cell candidate : reachable) {
+            // Skip occupied cells so the unit doesn't try to retreat onto a blocked tile
+            if (candidate.getUnit() != null && !candidate.equals(selfCell)) {
+                continue;
+            }
+
             double distance = getDistance(candidate, targetCell);
             if (distance > maxDistance) {
                 maxDistance = distance;
