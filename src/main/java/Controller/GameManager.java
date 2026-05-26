@@ -6,6 +6,7 @@ import Board.Grid;
 import Unit.Unit;
 import nckbill.turnbasedfinal.GameGUI;
 import nckbill.turnbasedfinal.UI.CellUI;
+import nckbill.turnbasedfinal.utils.AudioManager;
 
 import java.util.List;
 
@@ -80,9 +81,7 @@ public class GameManager {
             }
         });
 
-        gui.delayExecution(1 / GameGUI.getGameSpeed(), () -> {
-            currentUnit.performAction();
-        });
+        gui.delayExecution(1 / GameGUI.getGameSpeed(), currentUnit::performAction);
     }
 
     public void executeMovement(Unit movingUnit, List<Cell> path, Runnable onComplete) {
@@ -179,8 +178,11 @@ public class GameManager {
             gui.refreshVisualGrid(); // remove from gui grid
             gui.updateTurnDisplay(turnManager.getActiveUnit()); // remove from top bar
 
-            if (enemiesCountCurrent <= 0)
+            if (enemiesCountCurrent <= 0) {
                 handleEnd("VICTORY!");
+
+            }
+
             else if (allyCountCurrent <= 0) {
                 handleEnd("DEFEAT!");
             }
@@ -251,4 +253,9 @@ public class GameManager {
     public GameGUI getGUI() {
         return gui;
     }
+
+    public void playBGMWithFade(String path) {
+        AudioManager.playBGMWithFade(1.0, 0.2, path);
+    }
+
 }

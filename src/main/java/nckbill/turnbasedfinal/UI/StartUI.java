@@ -10,7 +10,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import nckbill.turnbasedfinal.GameGUI;
-import nckbill.turnbasedfinal.utils.AudioManager;
 import nckbill.turnbasedfinal.utils.ImageCache;
 import nckbill.turnbasedfinal.utils.UnitGenerator;
 
@@ -131,10 +130,7 @@ public class StartUI extends VBox {
     }
 
     private void transitionToGame() {
-        AudioManager.fadeOutBGM(1.0);
-        gui.delayExecution(1.0, () ->
-                AudioManager.playBGM("/assets/audio/battle-theme-" + selectedMap + ".mp3")
-        );
+        gui.playBGMWithFade("/assets/audio/battle-theme-" + selectedMap + ".mp3");
         gui.getRootLayout().setCenter(gui.getInteractiveGrid());
         gui.showGameGUI();
     }

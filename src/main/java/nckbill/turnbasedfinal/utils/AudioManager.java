@@ -96,6 +96,18 @@ public final class AudioManager {
         fadeOut.play();
     }
 
+    public static void playBGMWithFade(double fadeDuration, double delaySeconds, String resourcePath) {
+        fadeOutBGM(fadeDuration);
+        javafx.application.Platform.runLater(() -> {
+            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
+                    javafx.util.Duration.seconds(fadeDuration + delaySeconds)
+            );
+            pause.setOnFinished(e -> playBGM(resourcePath));
+            pause.play();
+        });
+    }
+
+
     /**
      * Adjust volume between 0.0 and 1.0
      */

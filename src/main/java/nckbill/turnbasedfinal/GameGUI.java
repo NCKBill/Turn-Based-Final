@@ -36,7 +36,7 @@ public class GameGUI extends Application {
         return gameManager != null ? gameManager.getSelectedViewUnit() : null;
     }
 
-    public static double gameSpeed = 0.5;
+    public static double gameSpeed = 0.7;
     public static int row = 10;
     public static int column = 10;
 
@@ -256,8 +256,8 @@ public class GameGUI extends Application {
         UnitUI attackerUI = attackerCell.getUnitUI();
 
         if (attackerUI != null) {
-            double dx = (targetCell.getCol() - attackerCell.getCol()) * 25;
-            double dy = (targetCell.getRow() - attackerCell.getRow()) * 25;
+            double dx = (targetCell.getCol() - attackerCell.getCol()) * 20;
+            double dy = (targetCell.getRow() - attackerCell.getRow()) * 20;
 
             // Fire callback only after the bump animation fully completes,
             // so fast game speeds can't start the next attack mid-animation.
@@ -280,9 +280,14 @@ public class GameGUI extends Application {
     public void showGameOver(String message) {
         Platform.runLater(() -> {
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-            alert.setTitle("Game Over");
+            alert.setTitle("Game End.");
             alert.setHeaderText(null);
             alert.setContentText(message);
+
+            if (message.equalsIgnoreCase("victory!"))
+                playBGMWithFade("/assets/audio/victory.mp3");
+            else
+                playBGMWithFade("/assets/audio/defeat.mp3");
 
             alert.showAndWait();
         });
@@ -294,8 +299,7 @@ public class GameGUI extends Application {
             returnToMainMenu();
             gameManager.resetGame();
             sideBarUI.clearLog();
-            AudioManager.fadeOutBGM(1.5);
-            delayExecution(1.5, () -> AudioManager.playBGM("/assets/audio/menu-theme.mp3"));
+            playBGMWithFade("/assets/audio/menu-theme.mp3");
         });
     }
 
@@ -351,4 +355,9 @@ public class GameGUI extends Application {
     public static void setGameSpeed(double gameSpeed) {
         GameGUI.gameSpeed = gameSpeed;
     }
+
+    public void playBGMWithFade(String path) {
+        AudioManager.playBGMWithFade(1.0, 0.2, path);
+    }
+
 }
