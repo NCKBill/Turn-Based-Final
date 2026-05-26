@@ -289,11 +289,6 @@ public class AIStrategyRanged implements AIStrategy {
                 continue;
             }
 
-            Cell targetCell = gm.getBackendGrid().getCell(unit);
-            if (!action.canExecute(currentCell, targetCell)) {
-                continue;
-            }
-
             double healthRatio = (double) unit.getHP() / unit.getMaxHP();
             if (healthRatio < 0.9 && healthRatio < lowestHealthRatio) {
                 lowestHealthRatio = healthRatio;
